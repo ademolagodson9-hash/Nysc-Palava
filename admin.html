@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PALAVA Admin</title>
+<style>
+:root{--g:#0E6B3B;--gd:#094a29;--m:#F4B400;--r:#C0392B;--i:#23235E}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:#f3f1e7;color:#1c2a22}
+header{background:var(--gd);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:18px;font-family:Rockwell,Georgia,serif;color:var(--m)}
+nav{display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #ddd}
+nav button,.b{border:0;border-radius:8px;padding:8px 12px;background:#e6e1cc;font-size:14px;cursor:pointer}
+nav button.on,.b.p{background:var(--g);color:#fff}.b.d{background:var(--r);color:#fff}.b.s{padding:5px 9px;font-size:12px;margin:2px}
+main{padding:16px;max-width:1000px;margin:auto}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px #0002}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat b{display:block;font-size:26px;color:var(--g)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:7px 6px;border-bottom:1px solid #eee;vertical-align:top}
+input,textarea,select{padding:9px;border:1px solid #bbb;border-radius:8px;font-size:14px;width:100%;font-family:inherit}
+textarea{min-height:200px;font-family:monospace;font-size:12px}
+label{display:block;margin:8px 0 3px;font-weight:600;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>input{flex:1;min-width:140px}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;background:#ddd;margin-left:4px}.tag.r{background:var(--r);color:#fff}.tag.g{background:#3ddc84}
+#login{max-width:340px;margin:12vh auto}
+.msg{padding:6px 0;border-bottom:1px solid #eee;font-size:14px}
+</style></head><body>
+<div id="app"></div>
+<script>
+const $=s=>document.querySelector(s);
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(m,u,b){const r=await fetch('/api/admin'+u,{method:m,headers:{'Content-Type':'application/json','X-Requested-With':'palava'},body:b?JSON.stringify(b):undefined,credentials:'same-origin'});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw Object.assign(new Error(j.error||'Request failed'),{status:r.status});return j}
+const fmt=n=>'₦'+Math.round(n||0).toLocaleString('en-NG');
+const when=t=>t?new Date(t).toLocaleString():'-';
+let tab='dash';
+const TABS=[['dash','Dashboard'],['users','Players'],['chat','Chat moderation'],['tx','Money transfers'],['ann','Announcements'],['cfg','Game settings'],['sec','Security']];
+function shell(inner){$('#app').innerHTML=`<header><h1>PALAVA Admin</h1><button class="b" onclick="logout()">Sign out</button></header><nav>${TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('')}</nav><main>${inner}</main>`}
+function loginView(msg){$('#app').innerHTML=`<div class="card" id="login"><h2>Admin sign in</h2>${msg?`<p style="color:#C0392B">${E(msg)}</p>`:''}<label for="ap">Admin password</label><input type="password" id="ap" autofocus><br><br><button class="b p" onclick="doLogin()">Sign in</button></div>`;$('#ap').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()})}
+async function doLogin(){try{await api('POST','/login',{password:$('#ap').value});go('dash')}catch(e){loginView(e.message)}}
+async function logout(){try{await api('POST','/logout')}catch(e){}loginView()}
+async function go(t){tab=t;try{await ({dash,users,chat,tx,ann,cfg,sec})[t]()}catch(e){if(e.status===401)loginView('Please sign in.');else alert(e.message)}}
+async function dash(){const s=await api('GET','/stats');shell(`<div class="stats">${[['Players',s.users],['Online now',s.online],['New today',s.newToday],['With saves',s.saves],['Finished games',s.finished],['Banned',s.banned],['Certificates issued',s.certs],['Naira transferred',fmt(s.transferTotal)],['Chat messages',s.globalCount],['DMs stored',s.dmCount]].map(x=>`<div class="card stat"><b>${x[1]}</b>${x[0]}</div>`).join('')}</div><div class="card">Tip: use <b>Game settings</b> to change the monthly allawee, bills, betting and registration for every player instantly.</div>`)}
+async function users(q){q=q==null?'':q;const r=await api('GET','/users?q='+encodeURIComponent(q));
+ shell(`<div class="card"><div class="row"><input id="uq" placeholder="Search username" value="${E(q)}"><button class="b p" onclick="users($('#uq').value)">Search</button></div></div><div class="card" style="overflow:auto"><table><tr><th>User</th><th>Character</th><th>Progress</th><th>Last seen</th><th>Actions</th></tr>${r.users.map(u=>`<tr><td><b>${E(u.username)}</b>${u.online?'<span class="tag g">online</span>':''}${u.banned?'<span class="tag r">banned</span>':''}${u.muted?'<span class="tag">muted</span>':''}</td><td>${u.summary?E(u.summary.name)+'<br><small>'+E(u.summary.course)+'</small>':'-'}</td><td>${u.summary?`Month ${u.summary.month}, score ${u.summary.score}${u.summary.ending?'<br>'+E(u.summary.ending):''}`:'no game'}</td><td>${when(u.lastSeen)}</td><td><button class="b s" onclick="viewUser('${u.username}')">Open</button><button class="b s ${u.banned?'':'d'}" onclick="ban('${u.username}',${!u.banned})">${u.banned?'Unban':'Ban'}</button><button class="b s" onclick="mute('${u.username}',${!u.muted})">${u.muted?'Unmute':'Mute'}</button></td></tr>`).join('')||'<tr><td colspan="5">No players</td></tr>'}</table></div>`)}
+async function ban(u,b){if(b&&!confirm('Ban '+u+'?'))return;await api('POST','/user/'+u+'/ban',{banned:b});users($('#uq')?$('#uq').value:'')}
+async function mute(u,m){await api('POST','/user/'+u+'/mute',{muted:m});users($('#uq')?$('#uq').value:'')}
+async function viewUser(u){const d=await api('GET','/user/'+u);
+ shell(`<div class="card"><h2>${E(d.username)}</h2><p>Created ${when(d.created)}. Last seen ${when(d.lastSeen)}. Friends: ${d.friends}.</p><p>${d.summary?`${E(d.summary.name)} | ${E(d.summary.course)} | ${E(d.summary.ppa)} | month ${d.summary.month} | score ${d.summary.score} | ${fmt(d.summary.cash)}`:'No game yet'}</p>
+ <div class="row"><input id="gr" type="number" placeholder="Give or take naira (e.g. 20000)"><button class="b p" onclick="grant('${u}')">Add to bank</button></div><br>
+ <div class="row"><input id="rp" type="text" placeholder="New password (6+ chars)"><button class="b" onclick="resetPw('${u}')">Reset password</button></div><br>
+ <button class="b" onclick="viewDm('${u}')">View their messages</button> <button class="b" onclick="resetSave('${u}')">Reset game save</button> <button class="b d" onclick="delUser('${u}')">Delete account</button></div>
+ <div class="card"><label>Raw save JSON (edit carefully, applies next time the player loads)</label><textarea id="sv">${E(d.save?JSON.stringify(d.save,null,1):'')}</textarea><br><br><button class="b p" onclick="saveJson('${u}')">Save JSON</button> <button class="b" onclick="users()">Back to players</button></div>`)}
+async function grant(u){const a=+$('#gr').value;if(!a)return;await api('POST','/user/'+u+'/grant',{amount:a});alert('Done. Applies on their next load.')}
+async function resetPw(u){try{await api('POST','/user/'+u+'/password',{password:$('#rp').value});alert('Password reset; they are signed out.')}catch(e){alert(e.message)}}
+async function resetSave(u){if(confirm('Wipe '+u+"'s save?")){await api('POST','/user/'+u+'/reset-save',{});viewUser(u)}}
+async function delUser(u){if(confirm('Permanently delete '+u+'?')){await api('DELETE','/user/'+u);users()}}
+async function saveJson(u){try{const t=$('#sv').value.trim();await api('PUT','/user/'+u+'/save',{save:t?JSON.parse(t):null});alert('Saved.')}catch(e){alert('Invalid JSON or '+e.message)}}
+async function viewDm(u){const r=await api('GET','/dm?user='+u);shell(`<div class="card"><h3>Messages involving ${E(u)}</h3>${r.messages.map(m=>`<div class="msg"><b>${E(m.from)}</b> to <b>${E(m.to)}</b> <small>${when(m.t)}</small><br>${E(m.text)} <button class="b s d" onclick="delDm(${m.id},'${u}')">Delete</button></div>`).join('')||'None'}<br><button class="b" onclick="viewUser('${u}')">Back</button></div>`)}
+async function delDm(id,u){await api('DELETE','/dm/'+id);viewDm(u)}
+async function chat(){const r=await api('GET','/chat');shell(`<div class="card"><h3>Global chat (latest ${r.messages.length})</h3>${r.messages.slice().reverse().map(m=>`<div class="msg"><b>${E(m.from)}</b> <small>${when(m.t)}</small><br>${E(m.text)} <button class="b s d" onclick="delChat(${m.id})">Delete</button> <button class="b s" onclick="mute('${m.from}',true).then(()=>go('chat'))">Mute user</button></div>`).join('')||'No messages'}</div>`)}
+async function tx(){const r=await api('GET','/transfers');shell(`<div class="card" style="overflow:auto"><h3>Latest money transfers between players</h3><table><tr><th>When</th><th>From</th><th>To</th><th>Amount</th><th>Note</th></tr>${r.list.map(x=>`<tr><td>${when(x.t)}</td><td>${E(x.from)}</td><td>${E(x.to)}</td><td>${fmt(x.amount)}</td><td>${E(x.note)}</td></tr>`).join('')||'<tr><td colspan="5">None yet</td></tr>'}</table></div>`)}
+async function delChat(id){await api('DELETE','/chat/'+id);chat()}
+async function ann(){const r=await api('GET','/announcements');shell(`<div class="card"><h3>Broadcast to everyone online</h3><div class="row"><input id="at" maxlength="200" placeholder="e.g. Double allawee weekend!"><button class="b p" onclick="postAnn()">Send</button></div></div><div class="card"><h3>Active announcements (shown on the title screen)</h3>${r.list.map(a=>`<div class="msg">${E(a.text)} <small>${when(a.t)}</small> <button class="b s d" onclick="delAnn(${a.id})">Remove</button></div>`).join('')||'None'}</div>`)}
+async function postAnn(){const t=$('#at').value.trim();if(t){await api('POST','/announce',{text:t});ann()}}
+async function delAnn(id){await api('DELETE','/announce/'+id);ann()}
+async function cfg(){const c=await api('GET','/config');shell(`<div class="card"><h3>Game settings (live for all players)</h3>
+ <label>Monthly NYSC allowance (allawee, ₦)</label><input id="c1" type="number" value="${c.allowance}">
+ <label>Cost-of-living multiplier (1 = normal, 1.5 = bills 50% higher)</label><input id="c2" type="number" step="0.1" min="0.2" max="5" value="${c.billsMult}">
+ <label>Message of the day (title screen)</label><input id="c3" maxlength="200" value="${E(c.motd)}">
+ <label><input type="checkbox" id="c4" style="width:auto" ${c.bettingEnabled?'checked':''}> Betting enabled</label>
+ <label><input type="checkbox" id="c7" style="width:auto" ${c.transfersEnabled?'checked':''}> Player-to-player money transfers enabled</label>
+ <label><input type="checkbox" id="c5" style="width:auto" ${c.registrationOpen?'checked':''}> New registrations open</label>
+ <label><input type="checkbox" id="c6" style="width:auto" ${c.maintenance?'checked':''}> Maintenance mode (blocks players, admin still works)</label><br>
+ <button class="b p" onclick="saveCfg()">Save settings</button></div>`)}
+async function saveCfg(){await api('PUT','/config',{allowance:+$('#c1').value,billsMult:+$('#c2').value,motd:$('#c3').value,bettingEnabled:$('#c4').checked,registrationOpen:$('#c5').checked,transfersEnabled:$('#c7').checked,maintenance:$('#c6').checked});alert('Saved. Live now.')}
+async function sec(){shell(`<div class="card"><h3>Change admin password</h3><input type="password" id="np" placeholder="New password (8+ characters)"><br><br><button class="b p" onclick="chAdm()">Update</button><p><small>If you set the ADMIN_PASSWORD environment variable, it overrides this on every restart.</small></p></div>`)}
+async function chAdm(){try{await api('POST','/password',{password:$('#np').value});alert('Updated. Please sign in again.');loginView()}catch(e){alert(e.message)}}
+api('GET','/stats').then(()=>go('dash')).catch(()=>loginView());
+</script></body></html>

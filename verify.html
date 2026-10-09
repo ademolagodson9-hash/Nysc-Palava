@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verify certificate | PALAVA</title>
+<style>body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:#094a29;color:#1c2a22;display:flex;justify-content:center;padding:20px}
+.c{background:#fffdf3;max-width:520px;width:100%;border-radius:14px;padding:22px;border:6px double #C9A227}
+h1{font-family:Rockwell,Georgia,serif;color:#0E6B3B;margin:0 0 6px}.ok{color:#0E6B3B;font-weight:700}.bad{color:#C0392B;font-weight:700}
+table{width:100%;border-collapse:collapse;margin-top:10px}td{padding:6px 4px;border-bottom:1px solid #eee}td:first-child{color:#666;width:38%}a{color:#23235E}</style></head>
+<body><div class="c" id="c"><h1>PALAVA certificate check</h1><p>Checking...</p></div>
+<script>
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const serial=decodeURIComponent(location.pathname.split('/').pop());
+fetch('/api/verify/'+encodeURIComponent(serial)).then(r=>r.json().then(j=>({ok:r.ok,j}))).then(({ok,j})=>{
+ const c=document.querySelector('#c');
+ if(!ok||!j.valid){c.innerHTML=`<h1>PALAVA certificate check</h1><p class="bad">No certificate found for ${E(serial)}.</p><p><a href="/">Back to the game</a></p>`;return}
+ const d=j.cert;
+ c.innerHTML=`<h1>PALAVA certificate check</h1><p class="ok">✔ Valid certificate</p><table><tr><td>Serial</td><td>${E(d.serial)}</td></tr><tr><td>Name</td><td>${E(d.name)}</td></tr><tr><td>Username</td><td>${E(d.username)}</td></tr><tr><td>Course</td><td>${E(d.course)}</td></tr><tr><td>PPA</td><td>${E(d.ppa)}, ${E(d.city)}, ${E(d.state)} State</td></tr><tr><td>Ending</td><td>${E(d.ending)}</td></tr><tr><td>Grade</td><td>${E(d.grade)} (score ${d.score})</td></tr><tr><td>Issued</td><td>${new Date(d.issued).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</td></tr></table><p><small>A game souvenir from PALAVA. Not an official NYSC document.</small></p><p><a href="/">Play PALAVA</a></p>`;
+}).catch(()=>{document.querySelector('#c').innerHTML='<h1>PALAVA certificate check</h1><p class="bad">Could not reach the server.</p>'});
+</script></body></html>

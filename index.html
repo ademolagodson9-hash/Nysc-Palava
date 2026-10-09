@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PALAVA</title>
+<meta name="description" content="Serve Your Fatherland. Survive the PALAVA. A Nigerian NYSC life-sim you can play in your browser.">
+<meta property="og:title" content="PALAVA"><meta property="og:description" content="Serve Your Fatherland. Survive the PALAVA.">
+<meta name="theme-color" content="#094a29"><link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<style>
+:root{--g:#0E6B3B;--gd:#094a29;--k:#BFA46A;--c:#F7F5EC;--i:#23235E;--m:#F4B400;--r:#C0392B;--ink:#1c2a22}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#0b1a12;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:520px;min-height:100vh;background:var(--c);display:flex;flex-direction:column;position:relative}
+.hud{position:sticky;top:0;z-index:5;background:var(--gd);color:#fff;padding:8px 12px;font-size:13px}
+.hud .r1,.hud .r3{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hud .r1 b{font-family:Rockwell,"Roboto Slab",Georgia,serif;font-size:13px;color:var(--m)}
+.hud .r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0}
+.hud .r2 div{display:flex;align-items:center;gap:6px}
+.bar{flex:1;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;transition:width .4s}
+.hud button{background:var(--m);border:0;border-radius:8px;padding:5px 12px;font-size:16px}
+.stage{position:relative;height:150px;display:flex;align-items:center;justify-content:center;font-size:44px;letter-spacing:10px;overflow:hidden}
+.stage .tint{position:absolute;inset:0;pointer-events:none}
+.stage .rain{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(105deg,transparent 0 9px,rgba(255,255,255,.45) 9px 10px);background-size:40px 40px;animation:rn .45s linear infinite}
+@keyframes rn{to{background-position:-20px 40px}}
+@media (prefers-reduced-motion:reduce){.stage .rain{animation:none}}
+.stage.big{height:210px;background-image:repeating-conic-gradient(#0E6B3B 0 25%,#23235E 0 50%);background-size:46px 46px}
+.body{padding:16px 16px 40px;flex:1}
+h2{font-family:Rockwell,"Roboto Slab",Georgia,serif;margin:0 0 10px;font-size:23px;line-height:1.2;color:var(--gd)}
+.big-t{font-size:40px;text-align:center;color:var(--m);background:var(--gd);padding:6px 0 0;margin:0;font-family:Rockwell,Georgia,serif;letter-spacing:2px}
+.tag{background:var(--gd);color:#fff;text-align:center;padding:4px 12px 16px;font-style:italic}
+p{margin:8px 0;line-height:1.5}
+.bub{background:#fff;border-left:4px solid var(--g);padding:8px 12px;margin:8px 0;border-radius:0 10px 10px 0;line-height:1.45;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.bub u{display:block;text-decoration:none;font-weight:700;font-size:12px;color:var(--i);margin-bottom:2px}
+.btn{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:12px;border:2px solid var(--g);background:#fff;font-size:16px;color:var(--ink);cursor:pointer}
+.btn:active{background:#e2f1e8}
+.btn small{display:block;color:#5b6b61;font-size:12.5px;margin-top:2px}
+.btn:disabled{opacity:.45;border-color:#aaa}
+.btn.pri{background:var(--g);color:#fff}
+.btn.pri small{color:#d5ecdd}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chip{padding:7px 12px;border-radius:20px;border:2px solid var(--i);background:#fff;font-size:14px}
+.chip.on{background:var(--i);color:#fff}
+input[type=text]{width:100%;padding:11px;border:2px solid var(--i);border-radius:10px;font-size:16px;margin:4px 0 10px}
+label.l{font-weight:700;font-size:13px;color:var(--i)}
+.bar2{position:relative;height:34px;background:#ddd;border-radius:8px;margin:16px 0;overflow:hidden}
+.zone{position:absolute;left:38%;width:24%;top:0;bottom:0;background:#8fd3a8}
+#mk{position:absolute;top:0;bottom:0;width:6px;background:var(--r);left:0}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--i);color:#fff;padding:8px 14px;border-radius:20px;font-size:14px;z-index:30;max-width:90%;text-align:center;pointer-events:none}
+.toast.bad{background:var(--r)}
+.ph{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;justify-content:center;align-items:flex-end}
+.ph>div{width:100%;max-width:520px;background:#101a15;color:#fff;border-radius:22px 22px 0 0;padding:14px;max-height:82vh;overflow:auto}
+.ph .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.ph .tabs button{flex:1;padding:8px 4px;border:0;border-radius:8px;background:#26352c;color:#fff;font-size:12px;min-width:60px}
+.ph .tabs button.on{background:var(--m);color:#000}
+.ph .m{background:#1f2e25;border-radius:10px;padding:8px 10px;margin:6px 0;font-size:14px}
+.ph .m b{color:var(--m)}
+.ph .btn{background:#26352c;color:#fff;border-color:#3a5545;font-size:14px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:14px}
+
+.stage .art{position:relative;z-index:2;display:flex;gap:6px}
+.stage .art span{display:inline-block;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-9px) rotate(4deg)}}
+.stage .cl{position:absolute;top:6px;left:0;white-space:nowrap;font-size:26px;opacity:.85;animation:drift 38s linear infinite}
+@keyframes drift{from{transform:translateX(-120%)}to{transform:translateX(560px)}}
+.stage .sun{position:absolute;top:8px;right:14px;font-size:28px;animation:glow 4s ease-in-out infinite}
+@keyframes glow{50%{transform:scale(1.15);filter:drop-shadow(0 0 8px #fff7)}}
+.stage .walk{position:absolute;left:0;right:0;bottom:2px;height:28px;z-index:1}
+.stage .walk i{position:absolute;bottom:0;font-style:normal;font-size:22px;animation:wk linear infinite}
+@keyframes wk{from{left:-12%}to{left:108%}}
+.body.in{animation:fin .4s ease-out}
+@keyframes fin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bub{display:flex;gap:10px;align-items:flex-start;animation:sl .4s both}
+@keyframes sl{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.bub .av{font-size:26px;line-height:1;animation:bob 2.6s ease-in-out infinite}
+.btn{transition:transform .08s,background .15s}.btn:active{transform:scale(.97)}
+.big-t{animation:pl 3s ease-in-out infinite}
+@keyframes pl{50%{text-shadow:0 0 18px #F4B400aa;letter-spacing:3px}}
+.shake{animation:sh .35s}
+@keyframes sh{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.pt{position:fixed;bottom:12%;font-size:26px;z-index:40;pointer-events:none;animation:up 1.5s ease-out both}
+@keyframes up{from{opacity:1;transform:translateY(0) scale(.7)}to{opacity:0;transform:translateY(-55vh) scale(1.3) rotate(25deg)}}
+#snd{position:fixed;left:10px;bottom:10px;z-index:25;width:44px;height:44px;border-radius:50%;border:0;background:var(--m);font-size:20px;box-shadow:0 2px 6px #0006}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.hud sup{font-size:10px;color:#fff;background:var(--r);border-radius:8px;padding:0 4px;margin-left:2px}
+input[type=password]{width:100%;padding:11px;border:2px solid var(--i);border-radius:10px;font-size:16px;margin:4px 0 10px}
+.ph input[type=text],.ph input[type=password]{background:#1f2e25;color:#fff;border-color:#3a5545}
+.ph .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.ph .row .btns{display:flex;gap:6px}
+.ph .row .btns button{padding:6px 10px;border:0;border-radius:8px;background:#3a5545;color:#fff;font-size:12px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#666;margin-right:6px}.dot.on{background:#3ddc84}
+.ph .mine{background:#2d4a39;margin-left:30px}.ph small{color:#9db8a8}
+@media print{body>*:not(#app){display:none!important}.hud,#stage,.btn,h2,p,.bub,#snd{display:none!important}.body{padding:0}.body img{width:100%;box-shadow:none}@page{size:landscape;margin:0}}
+button:focus-visible,input:focus-visible{outline:3px solid var(--m);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app"><div id="hud"></div><div id="stage"></div><div class="body" id="body"></div></div>
+<div id="ph"></div><button id="snd" onclick="toggleSnd()" aria-label="Toggle music">🔊</button>
+<script>
+/* ============ CORE ============ */
+const $=s=>document.querySelector(s);
+const fmt=n=>'₦'+Math.round(n).toLocaleString('en-NG');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const chance=p=>Math.random()<p;
+let S=null,CH=[],TM=null,SND=true,C={name:'',g:'f',course:'',pers:'Friendly'};
+let ME=null,ONT=true,CFG={allowance:77000,billsMult:1,bettingEnabled:true,registrationOpen:true,maintenance:false,motd:'',announcements:[]};
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(m,u,b){const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json','X-Requested-With':'palava'},body:b?JSON.stringify(b):undefined,credentials:'same-origin'});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw Object.assign(new Error(j.error||'Request failed'),{status:r.status});return j}
+const WX={sunny:'☀️',cloudy:'⛅',rain:'🌧️',heavy:'⛈️',storm:'🌩️',harmattan:'🌫️'};
+const ART={
+ title:'🇳🇬🚌🎓',aerial:'🛰️🏙️🌅',home:'🏠📱🎒',road:'🚌🛣️🌴',park:'🚐🧳🗣️',gate:'🏫🎖️🚪',queue:'📋🧍🧍🧍',
+ hostel:'🛏️🎒💡',parade:'🎖️🪖🇳🇬',market:'🍲🧵📱',field:'⚽🏐🥅',clinic:'🏥💊🩺',hall:'📚✏️🎓',stage:'🎭🥁💃',
+ envelope:'✉️✨🇳🇬',city:'🏙️🏍️🚕',ppa:'🏢💼🗂️',school:'🏫📖🔔',room:'🛋️🔑🕯️',night:'🌙🦟💤',grove:'🌳🌿🦋',cds:'🧹🌱🤝',
+ ceremony:'🏅🎺🇳🇬',phone:'📱💬💸',pay:'💵🧾🏦'};
+const BG={
+ title:'#0E6B3B',aerial:'linear-gradient(#f9b86a,#7a5ea8)',home:'linear-gradient(#ffd98a,#f4a259)',road:'linear-gradient(#a8d5e8,#e9e3c8)',
+ park:'linear-gradient(#e6d9a8,#c9a96a)',gate:'linear-gradient(#bfe3c9,#6fb48a)',queue:'linear-gradient(#e8e2c4,#c9bf92)',
+ hostel:'linear-gradient(#cfd8e8,#9aa7c7)',parade:'linear-gradient(#cdeac0,#7fbf7b)',market:'linear-gradient(#ffe29a,#ff9d5c)',
+ field:'linear-gradient(#bfe8a0,#5fae5f)',clinic:'linear-gradient(#e8f4f8,#b9dbe6)',hall:'linear-gradient(#f0e6cf,#cdb98a)',
+ stage:'linear-gradient(#5b3f8f,#23235E)',envelope:'linear-gradient(#fff1b8,#f4b400)',city:'linear-gradient(#bcd7ea,#dcd2b0)',
+ ppa:'linear-gradient(#dfe7ef,#aab8c9)',school:'linear-gradient(#ffe9a8,#b7d89a)',room:'linear-gradient(#e7d7c1,#b99e7c)',
+ night:'linear-gradient(#1b2250,#0b1030)',grove:'linear-gradient(#a8dba0,#3f8a54)',cds:'linear-gradient(#cfe9c1,#8fc77f)',
+ ceremony:'linear-gradient(#ffe9a0,#0E6B3B)',phone:'linear-gradient(#cfe0ff,#9bb5ee)',pay:'linear-gradient(#e0f0d0,#a8cf8a)'};
+function snd(f,d=.09){if(!SND)return;try{const a=snd.c||(snd.c=new(window.AudioContext||window.webkitAudioContext)());const o=a.createOscillator(),g=a.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+function toast(m,bad){const t=document.createElement('div');t.className='toast'+(bad?' bad':'');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1900);
+ if(bad){const a=$('#app');a.classList.remove('shake');void a.offsetWidth;a.classList.add('shake')}else if(/rep|₦|skill|win|Great|Right/i.test(m))burst(rnd(['🎉','✨','💚','🇳🇬','🥁']))}
+function burst(e){for(let i=0;i<7;i++){const d=document.createElement('div');d.className='pt';d.textContent=e;d.style.left=(15+Math.random()*70)+'%';d.style.animationDelay=(i*.06)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}}
+/* ---- Afrobeat-style generated music ---- */
+const AC={ctx:null,timer:null,step:0,master:null,nb:null,rg:null,rs:null};
+const mf=n=>440*Math.pow(2,(n-69)/12);
+function actx(){if(!AC.ctx){try{AC.ctx=new(window.AudioContext||window.webkitAudioContext)();AC.master=AC.ctx.createGain();AC.master.gain.value=.35;AC.master.connect(AC.ctx.destination);const L=AC.ctx.sampleRate*2,b=AC.ctx.createBuffer(1,L,AC.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<L;i++)d[i]=Math.random()*2-1;AC.nb=b}catch(e){AC.ctx=null;return null}}if(AC.ctx.state==='suspended')AC.ctx.resume();return AC.ctx}
+function tone(f,t,d,type,v){const c=AC.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.master);o.start(t);o.stop(t+d+.02)}
+function drum(t,f0,f1,d,v){const c=AC.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.master);o.start(t);o.stop(t+d+.02)}
+function hat(t,d,v,hp){const c=AC.ctx,r=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();r.buffer=AC.nb;f.type='highpass';f.frequency.value=hp;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);r.connect(f);f.connect(g);g.connect(AC.master);r.start(t);r.stop(t+d+.02)}
+const CHORDS=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]],BASS=[45,41,36,43],ARP=[0,3,6,8,11,14];
+function musicStep(){const c=AC.ctx;if(!c||!SND)return;const t=c.currentTime+.02,st=AC.step%16,bar=Math.floor(AC.step/16)%4;
+ if([0,7,10].includes(st))drum(t,140,45,.18,.9);
+ if(st===4||st===12)hat(t,.12,.35,1500);
+ if(st%2===0)hat(t,.04,.12,7000);else if(Math.random()<.5)hat(t,.03,.06,8000);
+ if([3,11,14].includes(st)&&Math.random()<.8)drum(t,420,220,.12,.3);
+ if([0,3,6,10,12].includes(st))tone(mf(BASS[bar]+(st===6?12:0)),t,.25,'sine',.55);
+ const ai=ARP.indexOf(st);if(ai>=0)tone(mf(CHORDS[bar][[0,1,2,1,2,1][ai]]+12),t,.22,'triangle',.18);
+ AC.step++}
+function rainAmb(){const c=AC.ctx;if(!c)return;if(!AC.rs){const r=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();r.buffer=AC.nb;r.loop=true;f.type='lowpass';f.frequency.value=2500;g.gain.value=0;r.connect(f);f.connect(g);g.connect(c.destination);r.start();AC.rs=r;AC.rg=g}AC.rg.gain.value=(SND&&S&&isRain())?.07:0}
+function musicOn(){if(!SND)return;if(!actx())return;AC.master.gain.value=.35;if(!AC.timer)AC.timer=setInterval(musicStep,145);rainAmb()}
+function musicOff(){if(AC.timer){clearInterval(AC.timer);AC.timer=null}if(AC.master)AC.master.gain.value=0;if(AC.rg)AC.rg.gain.value=0}
+function toggleSnd(){SND=!SND;const b=$('#snd');if(b)b.textContent=SND?'🔊':'🔇';SND?musicOn():musicOff()}
+const total=()=>S.cash+S.bank;
+function pay(n){if(total()<n)return false;let c=Math.min(S.cash,n);S.cash-=c;S.bank-=(n-c);return true}
+function earn(n,toBank=true){if(toBank)S.bank+=n;else S.cash+=n;toast('+'+fmt(n))}
+function rep(k,n){if(!n)return;if(n>0&&S.phase==='life'){S.wk=S.wk||{};S.wk.g=S.wk.g||{};const u=S.wk.g[k]||0,mx=Math.min(n,8-u);if(mx<=0)return;n=mx;S.wk.g[k]=u+mx}S.rep[k]+=n;const nm={camp:'Camp',ppa:'PPA',comm:'Community',friend:'Friendship',prof:'Professional'}[k];toast((n>0?'+':'')+n+' '+nm+' rep',n<0)}
+function sk(k,n){S.sk[k]=clamp(S.sk[k]+n,0,10);toast('+'+n+' '+k+' skill')}
+function hp(n){S.hp=clamp(S.hp+n,0,100)}
+function en(n){S.en=clamp(S.en+n,0,100)}
+const ok=(k,b)=>chance(clamp(b+S.sk[k]*.07+(S.en<25?-.12:0),.1,.95));
+function clock(){const h=Math.floor(S.min/60),m=S.min%60;return `${((h+11)%12)+1}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`}
+function tick(m){S.min+=m;while(S.min>=1440){S.min-=1440;S.day++;rollWx()}}
+function rollWx(){const h=S.month>=3&&S.month<=5&&S.phase==='life';const r=Math.random();S.wx=h&&r<.35?'harmattan':r<.4?'sunny':r<.65?'cloudy':r<.85?'rain':r<.95?'heavy':'storm'}
+function msg(from,text){S.chat.unshift({from,text,day:S.day});S.chat=S.chat.slice(0,25)}
+const isRain=()=>['rain','heavy','storm'].includes(S&&S.wx);
+
+/* ============ VIEW ============ */
+function hudHtml(){if(!S)return'';const b=(v,c)=>`<div class="bar"><i style="width:${clamp(v,0,100)}%;background:${c}"></i></div>`;
+ return `<div class="hud"><div class="r1"><b>${S.ch}</b><span>Day ${S.day}, ${clock()} ${WX[S.wx]}</span></div><div class="r2"><div>❤️${b(S.hp,'#e5533d')}</div><div>⚡${b(S.en,'#F4B400')}</div></div><div class="r3"><span>${fmt(S.cash)} cash</span><span>${fmt(S.bank)} bank</span><span>${ME?`<button onclick="window.hub&&hub()" aria-label="Online hub">🌐${ME.unread?`<sup>${ME.unread}</sup>`:''}</button> `:''}<button onclick="phone()" aria-label="Open phone">📱</button></span></div></div>`}
+const OUT=['road','city','gate','parade','field','market','grove','cds','aerial','park','queue'];
+const AV={Mama:'👩🏾',Papa:'👨🏾',Officer:'🧑🏾‍✈️',Soldier:'🪖',Whistle:'📣',Vendor:'🧑🏾‍🍳',Trader:'🧑🏾‍💼',Driver:'🧑🏾‍✈️',Conductor:'🚌',Dami:'😊',Landlord:'🧓🏾',Agent:'🕴️',Supervisor:'👔',SMS:'📱',Letter:'📄','Posting letter':'✉️','Corpers group chat':'💬',Seller:'🛍️','Group coordinator':'🧑🏾‍🤝‍🧑🏾','Mama Put':'👩🏾‍🍳',Barber:'💈',Official:'🧑🏾‍💼'};
+function seg(t){try{return[...new Intl.Segmenter().segment(t)].map(x=>x.segment)}catch(e){return Array.from(t)}}
+function stageHtml(o,a,h,tint){
+ const out=OUT.includes(a),night=S&&(h<5||h>=19);
+ const art=seg(ART[a]||'').map((e,i)=>`<span style="animation-delay:${i*.28}s">${e}</span>`).join('');
+ const wk=out?['🚶🏾‍♀️','🏍️','🚌','🚶🏾‍♂️'].map((e,i)=>`<i style="animation-duration:${10+i*5}s;animation-delay:-${i*4}s">${e}</i>`).join(''):'';
+ return `<div class="stage ${o.big?'big':''}" id="stage" style="${o.big?'':'background:'+(BG[a]||BG.home)}">${out?`<div class="cl">☁️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;☁️</div><div class="sun">${night?'🌙':'☀️'}</div>`:''}<div class="art" style="${o.big?'font-size:56px':''}">${art}</div><div class="walk">${wk}</div><div class="tint" style="${tint}"></div>${S&&isRain()&&a!=='title'?'<div class="rain"></div>':''}</div>`}
+function view(o){
+ clearInterval(TM);TM=null;ONT=false;
+ $('#hud').innerHTML=hudHtml();
+ const a=o.a||'home',h=S?Math.floor(S.min/60):12;
+ let tint='';
+ if(S&&(h<5||h>=19))tint='background:rgba(10,10,60,.5)';else if(S&&h>=17)tint='background:rgba(255,120,30,.18)';
+ else if(S&&S.wx==='harmattan')tint='background:rgba(220,200,170,.4)';
+ $('#stage').outerHTML=stageHtml(o,a,h,tint);
+ if(AC.ctx)rainAmb();
+ let x='';
+ (o.x||[]).forEach((l,i)=>{x+=Array.isArray(l)?`<div class="bub" style="animation-delay:${i*.12}s"><span class="av">${AV[l[0]]||'🙂'}</span><div><u>${l[0]}</u>${l[1]}</div></div>`:`<p>${l}</p>`});
+ CH=o.c||[];
+ let c=CH.map((q,i)=>`<button class="btn ${q.p?'pri':''}" ${q.d?'disabled':''} onclick="pick(${i})"><b>${q.t}</b>${q.s?`<small>${q.s}</small>`:''}</button>`).join('');
+ $('#body').innerHTML=(o.big?'':`<h2>${o.t||''}</h2>`)+x+(o.html||'')+c;
+ const bd=$('#body');bd.classList.remove('in');void bd.offsetWidth;bd.classList.add('in');
+ window.scrollTo(0,0);
+}
+function pick(i){if(SND&&!AC.timer)musicOn();snd(300);snd(440,.06);CH[i].f()}
+function res(lines,next,a,label){view({a:a||'home',t:'',x:lines,c:[{t:label||'Continue',p:1,f:next}]})}
+
+/* ============ SAVE ============ */
+const hudRefresh=()=>{if(S)document.querySelector('#hud').innerHTML=hudHtml()};
+const scoreOf=()=>Math.max(0,Math.round(total()/1000+Object.values(S.rep).reduce((a,b)=>a+b,0)*4+Object.values(S.sk).reduce((a,b)=>a+b,0)*3+S.work*1.2+S.cds*2+S.explored*1.5+S.week*2.5));
+const summary=()=>({name:S.name,course:S.course,ppa:S.ppa?S.ppa.name:'',city:S.ppa?S.ppa.city:'',state:S.ppa?S.ppa.st:'',month:S.month,week:S.week,score:scoreOf(),cash:Math.round(total()),rep:S.rep,ending:S.endingName||'',phase:S.phase});
+function applyCheers(){if(ME&&S&&ME.cheers>0){const n=ME.cheers;ME.cheers=0;S.rep.friend+=n;toast('Friends cheered you: +'+n+' friendship rep');api('POST','/api/cheers/claim').catch(()=>{})}}
+const LS=()=>'nysc-palava-save'+(ME?':'+ME.username:'');
+let saveT=null;
+let CERT=null;
+async function save(now){if(!S)return;const j=JSON.stringify(S);
+ try{await window.storage.set(LS(),j)}catch(e){try{localStorage.setItem(LS(),j)}catch(e2){}}
+ if(!ME)return;
+ const push=async()=>{try{const r=await api('PUT','/api/save',{save:S,summary:summary()});if(r.cert)CERT=r.cert;return r}catch(e){return null}};
+ clearTimeout(saveT);if(now)return push();saveT=setTimeout(push,400)}
+async function saveNow(quit){
+ if(!S||!['camp','life','end'].includes(S.phase)){toast('You can save once you reach camp',1);return}
+ const r=await save(true);
+ if(ME&&!r)toast('Cloud save failed. Saved on this device only.',1);else toast(ME?'Saved to your account ✓':'Saved on this device ✓');
+ if(quit){closePh();title()}
+}
+let claiming=false;
+async function applyInbox(){if(!ME||!S||claiming||!(ME.inbox>0))return;claiming=true;
+ try{const r=await api('POST','/api/transfer/claim');ME.inbox=0;if(r.total>0){S.bank+=r.total;r.items.forEach(i=>msg(i.from,`Sent you ${fmt(i.amount)}${i.note?': '+i.note:''}`));toast('💸 You received '+fmt(r.total)+' from friends!');save(true);hudRefresh()}}catch(e){}
+ claiming=false}
+
+/* ============ CERTIFICATE ============ */
+const grade=sc=>sc>=1800?'Distinction':sc>=1100?'Credit':'Pass';
+function hashNum(t){let h=2166136261;for(const c of String(t)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return Math.abs(h)}
+function certInfo(){
+ const c=CERT;let o;
+ if(c)o={name:c.name,username:c.username,course:c.course,ppa:c.ppa,city:c.city,state:c.state,ending:c.ending,score:c.score,grade:c.grade,serial:c.serial,issued:c.issued,verified:true};
+ else{const sc=summary().score;o={name:S.name,username:'guest',course:S.course,ppa:S.ppa.name,city:S.ppa.city,state:S.ppa.st,ending:S.endingName,score:sc,grade:grade(sc),serial:'GUEST-'+hashNum(S.name+S.course+S.day).toString(36).toUpperCase().slice(0,6),issued:Date.now(),verified:false}}
+ const n=hashNum(o.serial),yy=String(new Date(o.issued).getFullYear()).slice(2);
+ o.code=`PL/${o.state==='Osun'?'OS':'OY'}/${yy}B/${1000+n%9000}`;o.callup=`PL/${yy}/${100000+n%900000}`;
+ o.date=new Date(o.issued).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});return o}
+function wrapText(g,t,x,y,w,lh){let l='';for(const wd of t.split(' ')){const test=l+wd+' ';if(g.measureText(test).width>w&&l){g.fillText(l.trim(),x,y);l=wd+' ';y+=lh}else l=test}g.fillText(l.trim(),x,y);return y}
+function drawCert(d){
+ const cv=document.createElement('canvas');cv.width=1400;cv.height=1000;const g=cv.getContext('2d');
+ g.fillStyle='#fffdf3';g.fillRect(0,0,1400,1000);
+ for(const y of[0,964]){g.fillStyle='#0E6B3B';g.fillRect(0,y,1400,36)}
+ g.fillStyle='#fff';g.fillRect(0,36,1400,10);g.fillRect(0,954,1400,10);
+ g.strokeStyle='#0E6B3B';g.lineWidth=8;g.strokeRect(50,70,1300,860);g.strokeStyle='#C9A227';g.lineWidth=3;g.strokeRect(64,84,1272,832);
+ g.save();g.translate(700,520);g.rotate(-.42);g.globalAlpha=.06;g.fillStyle='#0E6B3B';g.font='bold 210px Georgia,serif';g.textAlign='center';g.fillText('PALAVA',0,60);g.restore();
+ g.textAlign='center';g.fillStyle='#094a29';
+ g.beginPath();g.arc(700,160,50,0,7);g.fillStyle='#0E6B3B';g.fill();g.strokeStyle='#C9A227';g.lineWidth=4;g.stroke();
+ g.fillStyle='#F4D35E';g.beginPath();for(let i=0;i<10;i++){const r=i%2?10:24,a=-Math.PI/2+i*Math.PI/5;g.lineTo(700+Math.cos(a)*r,160+Math.sin(a)*r)}g.closePath();g.fill();
+ g.fillStyle='#094a29';g.font='bold 40px Georgia,serif';g.fillText('NATIONAL YOUTH SERVICE CORPS',700,255);
+ g.font='bold 62px Georgia,serif';g.fillStyle='#0E6B3B';g.fillText('CERTIFICATE OF NATIONAL SERVICE',700,330);
+ g.font='italic 24px Georgia,serif';g.fillStyle='#555';g.fillText('PALAVA Game Edition',700,365);
+ g.font='26px Georgia,serif';g.fillStyle='#222';g.fillText('This is to certify that',700,420);
+ g.font='bold 64px Georgia,serif';g.fillStyle='#23235E';g.fillText(d.name.toUpperCase(),700,495);
+ g.strokeStyle='#C9A227';g.lineWidth=2;g.beginPath();g.moveTo(300,512);g.lineTo(1100,512);g.stroke();
+ g.font='20px Georgia,serif';g.fillStyle='#555';g.fillText('Username: '+d.username,700,542);
+ g.font='26px Georgia,serif';g.fillStyle='#222';
+ wrapText(g,`a graduate of ${d.course}, mobilised for the National Youth Service and deployed to ${d.ppa}, ${d.city}, ${d.state} State, has completed the one-year national service and earned the title of "${d.ending}".`,700,590,1000,38);
+ g.textAlign='left';g.font='22px Georgia,serif';g.fillStyle='#222';
+ const rows=[['State code',d.code],['Call-up number',d.callup],['Grade',d.grade],['Final score',String(d.score)]];
+ rows.forEach((r,i)=>{const x=i%2?760:260,y=715+Math.floor(i/2)*40;g.fillStyle='#555';g.fillText(r[0]+':',x,y);g.fillStyle='#094a29';g.font='bold 22px Georgia,serif';g.fillText(r[1],x+190,y);g.font='22px Georgia,serif'});
+ g.textAlign='center';g.fillStyle='#222';g.fillText('Date issued: '+d.date,700,812);
+ g.strokeStyle='#222';g.lineWidth=1.5;for(const x of[300,1100]){g.beginPath();g.moveTo(x-160,880);g.lineTo(x+160,880);g.stroke()}
+ g.font='italic 20px Georgia,serif';g.fillStyle='#444';g.fillText('Director-General (fictional)',300,904);g.fillText('Camp Commandant (fictional)',1100,904);
+ g.font='bold 20px monospace';g.fillStyle='#0E6B3B';g.fillText('Serial: '+d.serial,700,878);
+ g.font='16px monospace';g.fillStyle='#555';g.fillText(d.verified?'Verify: '+location.origin+'/verify/'+d.serial:'Guest certificate (sign in to get a verifiable one)',700,902);
+ g.font='15px Georgia,serif';g.fillStyle='#777';g.fillText('Game souvenir from PALAVA. This is not an official NYSC document.',700,950);
+ return cv}
+async function showCert(){
+ if(ME&&!CERT){try{CERT=(await api('GET','/api/certificate')).cert}catch(e){}}
+ if(!CERT&&!(S&&S.ppa)){toast('Finish your service year to earn a certificate',1);return}
+ let url='';try{url=drawCert(certInfo()).toDataURL('image/png')}catch(e){toast('Could not draw the certificate',1);return}
+ view({a:'ceremony',t:'Your certificate',x:[CERT?`Certificate ${CERT.serial} is registered. Anyone can verify it at /verify/${CERT.serial}.`:'Sign in before you finish a game to get a verifiable certificate.'],
+  html:`<img src="${url}" alt="Certificate of National Service" style="width:100%;border-radius:8px;box-shadow:0 2px 10px #0004"><a class="btn pri" style="text-align:center;text-decoration:none" href="${url}" download="palava-certificate.png"><b>Download certificate (PNG)</b></a>`,
+  c:[{t:'Print or save as PDF',f:()=>window.print()},{t:'Back',f:S&&S.phase==='end'?endingScreen:title}]});
+}
+async function load(){let v=null;
+ if(ME){try{const r=await api('GET','/api/save');if(r.save)v=JSON.stringify(r.save)}catch(e){}}
+ if(!v){try{v=(await window.storage.get(LS())).value}catch(e){}}
+ if(!v){try{v=localStorage.getItem(LS())}catch(e){}}
+ if(!v){toast('No saved game found',1);return title()}
+ try{S=JSON.parse(v)}catch(e){toast('Save is corrupted',1);return title()}
+ if(S.week==null)S.week=Math.max(1,((S.month||1)-1)*4+1);S.wk=S.wk||{};if(S.cdsWeek==null)S.cdsWeek=0;
+ if(S.phase==='camp')campHub();else if(S.phase==='life'&&S.ppa)monthHub();else{toast('That game is already finished. Start a new one!',1);title()}}
+
+/* ============ TITLE ============ */
+function title(){S=null;ONT=true;$('#hud').innerHTML='';
+ $('#stage').outerHTML=stageHtml({big:1},'title',12,'');
+ const ann=(CFG.announcements||[]).slice(0,2).map(a=>`<div class="bub"><span class="av">📢</span><div><u>Announcement</u>${E(a.text)}</div></div>`).join('');
+ CH=[{t:'New game',p:1,f:()=>{if(CFG.maintenance)return toast('The game is under maintenance',1);S=newState();CERT=null;cine(0)}},
+  {t:'Continue',s:ME?'Resume your cloud save':'Resume your saved game',f:load}];
+ if(ME)CH.push({t:'Online hub',s:'Friends, chat, leaderboard',f:()=>window.hub&&hub()});
+ else CH.push({t:'Sign in or create account',s:'Pick a username and play with friends',f:()=>window.authScreen?authScreen():toast('Online features are unavailable offline',1)});
+ CH.push({t:'Settings',f:settings},{t:'Extras',f:extras});
+ $('#body').innerHTML=`<h1 class="big-t">PALAVA</h1><div class="tag">Serve Your Fatherland.<br>Survive the PALAVA.</div>${CFG.onlinePlayers>0?`<p id="livePlayers" style="text-align:center;font-size:.9rem;opacity:.9">🟢 ${CFG.onlinePlayers} player${CFG.onlinePlayers===1?'':'s'} online</p>`:''}${ME?`<p style="text-align:center">Signed in as <b>${E(ME.username)}</b></p>`:''}${CFG.motd?`<p style="text-align:center">${E(CFG.motd)}</p>`:''}${CFG.maintenance?'<p style="text-align:center;color:#C0392B"><b>Maintenance mode is on.</b></p>':''}${ann}`+CH.map((q,i)=>`<button class="btn ${q.p?'pri':''}" onclick="pick(${i})"><b>${q.t}</b>${q.s?`<small>${q.s}</small>`:''}</button>`).join('');
+}
+function settings(){view({a:'phone',t:'Settings',x:['Sound is '+(SND?'on':'off')+'. Auto-save runs at every camp day and every month.'],c:[{t:SND?'Turn sound off':'Turn sound on',f:()=>{toggleSnd();settings()}},{t:'Back',f:title}]})}
+function extras(){view({a:'title',t:'Extras',x:['This is a playable vertical slice: Chapters 1 to 10, one full service year, 7 endings.','Everything is original and fictional. Places are inspired by Oyo and Osun but institutions, people and events are invented.','Full-game roadmap: 3D open world (Unreal Engine 5), driving and fuel, NPC daily routines, full phone suite, more mini-games.'],c:[{t:'Back',f:title}]})}
+
+/* ============ STATE ============ */
+function newState(){return{name:'Corper',g:'f',course:'',pers:'',day:1,min:360,cash:25000,bank:35000,hp:100,en:100,wx:'sunny',phase:'pre',ch:'Chapter 1: The Call-Up',
+ rep:{camp:0,ppa:0,comm:0,friend:0,prof:0},sk:{driving:1,comm:1,business:1,tech:1,fitness:1,lead:1,create:1,teach:1,build:1,photo:1},
+ f:{},ppa:null,home:null,month:0,ap:0,cds:0,cdsGroup:null,romance:0,explored:0,culture:0,palava:0,hustleEarn:0,hustles:0,attend:0,work:0,chat:[],seen:[],campDay:1,slot:0,talent:0,score:0,incomeLeft:0,week:1,wk:{},cdsWeek:0,style:0,bets:0,betNet:0,urge:0,shop:0,thrift:0,debt:0,arrears:0}}
+
+/* ============ OPENING ============ */
+const CINE=['Aerial shots drift over Southwestern Nigeria: the red roofs of Ibadan, the busy markets of Osogbo, buses, motorcycles, rain clouds, a long orange sunset.',
+ '"After years of lectures, assignments, exams and sleepless nights... the time has finally come."','"One year. One uniform. One strange journey."','"Welcome to NYSC. Welcome to PALAVA."'];
+function cine(i){view({a:'aerial',t:'',x:[CINE[i]],c:[{t:i<CINE.length-1?'Next':'Begin',p:1,f:()=>i<CINE.length-1?cine(i+1):create()}]})}
+
+const CATS=[
+ ['Architecture',/architect|building|urban|regional plan|estate|surveying|quantity|geoinform|landscape|town plan/i,{build:2,create:1},['arch','eng','office']],
+ ['Computer Science',/comput|software|informat|cyber|data|\bict\b|network|artificial|statistic|mathemat/i,{tech:2},['ict','school','office']],
+ ['Education',/educat|teach|pedagog|guidance|counsel|early child|special ed|library|primary|secondary/i,{teach:2},['school','school','ngo']],
+ ['Mass Communication',/mass|journal|media|broadcast|communic|theatre|film|creative art|performing|music|fine art|graphic|public relation|advertis/i,{comm:1,photo:1,create:1},['media','ngo','office']],
+ ['Health',/nurs|medic|pharm|health|physio|radiograph|anatom|physiolog|dental|optom|laborator|nutrition|dietet|surgery/i,{fitness:1,comm:1},['hospital','school','ngo']],
+ ['Agriculture',/agric|agronom|animal|fisher|forest|soil|crop|horticul|food science|veterin|aquacult/i,{business:1,build:1},['agro','ngo','school']],
+ ['Business',/account|bank|financ|business|econom|marketing|manage|entrepren|insurance|actuarial|procure|purchas|taxation|human resource|hospitality|tourism/i,{business:2},['office','biz','school']],
+ ['Engineering',/engineer|technolog|mechatron|petroleum|mining|geolog|metallurg|marine|aerospace/i,{build:1,tech:1},['eng','eng','office']],
+ ['Humanities and Law',/law|jurisprud|politic|sociolog|public admin|history|philosoph|religio|linguist|language|literature|theolog|international|social work|psycholog|anthropolog|peace|christian|islamic|arabic|yoruba|igbo|hausa|french/i,{comm:1,lead:1},['office','ngo','school','media']],
+ ['Science',/biolog|chem|physic|microbio|biochem|botany|zoology|environment|geograph|science/i,{tech:1,teach:1},['school','hospital','agro']]];
+const CAT_DEFAULT=['General',null,{comm:1,lead:1},['office','ngo','school','biz']];
+function catOf(t){for(const c of CATS)if(c[1].test(t))return c[0];return 'General'}
+function catInfo(n){return CATS.find(c=>c[0]===n)||CAT_DEFAULT}
+const cleanTxt=(t,n)=>String(t||'').replace(/[<>&"'`\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim().slice(0,n);
+const COURSES=['Architecture','Computer Science','Education','Mass Communication','Nursing','Agriculture','Accounting','Mechanical Engineering','Law','Biochemistry','Estate Management','Economics','Microbiology','Political Science','English Language','Pharmacy'];
+const PERS=['Friendly','Ambitious','Funny','Quiet','Adventurous','Business-minded','Academic','Social'];
+function setC(k,v){C.name=$('#nm').value;C.course=$('#cs').value;C[k]=v;create()}
+function create(){
+ const chips=(k,l,lab)=>`<label class="l">${lab}</label><div class="chips">${l.map(v=>`<button class="chip ${C[k]===v?'on':''}" onclick="setC('${k}','${v}')">${v}</button>`).join('')}</div>`;
+ const gen=`<label class="l">Gender</label><div class="chips"><button class="chip ${C.g==='f'?'on':''}" onclick="setC('g','f')">Female</button><button class="chip ${C.g==='m'?'on':''}" onclick="setC('g','m')">Male</button></div>`;
+ S=S||newState();
+ view({a:'home',t:'Create your corps member',html:`<label class="l" for="nm">Name</label><input type="text" id="nm" maxlength="18" value="${C.name}" placeholder="e.g. Adaeze or Tunde">`+gen+`<label class="l" for="cs">Course of study (type your own)</label><input type="text" id="cs" list="cl" maxlength="40" value="${E(C.course)}" placeholder="e.g. Estate Management, Law, Biochemistry"><datalist id="cl">${COURSES.map(c=>`<option value="${c}">`).join('')}</datalist>`+chips('pers',PERS,'Personality'),
+  c:[{t:'Start my service year',p:1,f:begin}]});
+}
+function begin(){
+ const nm=cleanTxt($('#nm').value,18),cs=cleanTxt($('#cs').value,40);C.name=nm;C.course=cs;
+ if(!nm){toast('Enter a name first',1);return}
+ if(cs.length<2){toast('Type your course of study',1);return}
+ S=newState();S.name=nm;S.g=C.g;S.course=cs;S.cat=catOf(cs);S.pers=C.pers;
+ const a=catInfo(S.cat)[2];
+ const p={Friendly:{comm:2},Ambitious:{lead:2},Funny:{comm:1,create:1},Quiet:{tech:1,create:1},Adventurous:{fitness:1,driving:1},'Business-minded':{business:2},Academic:{teach:1,tech:1},Social:{comm:1,lead:1}}[C.pers];
+ for(const k in a)S.sk[k]+=a[k];for(const k in p)S.sk[k]+=p[k];
+ S.phase='pre';
+ view({a:'phone',t:'Chapter 1: The Call-Up',x:['Your phone buzzes while you are eating.',['SMS','CONGRATULATIONS! You have been mobilized for the National Youth Service Corps.'],`${S.name}, ${S.course} graduate. Your family screams, your friends send ten fire emojis, and your mother starts praying loudly in the corridor.`],c:[{t:'Celebrate, then get ready',p:1,f:prep}]});
+}
+
+/* ============ PREP ============ */
+function prep(){
+ const f=S.f,done=f.printed&&f.tee&&f.packed&&f.family;
+ view({a:'home',t:'Get ready for camp',x:['Camp reporting date is close. Finish your list.'],c:[
+  {t:(f.printed?'✅ ':'')+'Print documents',s:'Call-up letter, credentials, passport photos. About ₦1,000',d:f.printed,f:printDocs},
+  {t:(f.tee?'✅ ':'')+'Buy white T-shirts and camp items',s:'Haggle at the market',d:f.tee,f:buyTee},
+  {t:(f.packed?'✅ ':'')+'Pack your bag',d:f.packed,f:packBag},
+  {t:(f.family?'✅ ':'')+'Say goodbye to family',d:f.family,f:goodbye},
+  {t:'Travel to camp',s:done?'Everything is ready':'Finish the list first',p:done,d:!done,f:journey}]});
+}
+function printDocs(){
+ view({a:'room',t:'Business centre',x:['The café is packed with other soon-to-be corpers. Halfway through your printing...','NEPA takes the light. The whole shop goes dark. 🔌'],c:[
+  {t:'Wait it out',s:'Lose 1 hour',f:()=>{tick(60);pay(1000);S.f.printed=true;res(['After a long hour the light returns. Documents printed.'],prep)}},
+  {t:'Run to another café with a generator',s:'₦1,500 extra',d:total()<2500,f:()=>{pay(2500);S.f.printed=true;rep('friend',0);res(['The generator café charges extra but you are done in 20 minutes.'],prep)}}]});
+}
+function buyTee(){
+ haggle('3 white T-shirts, socks and a cap',6000,'Trader',p=>{if(p===null){res(['You walk away. Another trader down the road will do it. You still need this.'],prep);return}S.f.tee=true;res(['Items bagged. You stuff them into your bag.'],prep)});
+}
+function packBag(){view({a:'home',t:'Packing',x:['Your mother keeps adding things. What is your strategy?'],c:[
+ {t:'Pack light',s:'Easy to carry. Less comfort.',f:()=>{S.f.packed=true;S.f.light=true;res(['One bag. You can run if you need to.'],prep)}},
+ {t:'Pack smart, with a power bank',s:'₦4,000',d:total()<4000,f:()=>{pay(4000);S.f.packed=true;S.f.pb=true;res(['Power bank packed. Your phone will not die on you now. Probably.'],prep)}},
+ {t:'Pack everything (mat, bucket, provisions)',s:'Comfort in camp, but heavy',f:()=>{S.f.packed=true;S.f.heavy=true;en(-10);res(['You can barely lift the bag, but you will not be hungry in camp.'],prep)}}]})}
+function goodbye(){S.f.family=true;S.cash+=10000;rep('friend',2);res([['Mama','Ah! Don\'t forget to pray. Eat well. And do not follow bad friends.'],['Papa','Serve well. Take this small money.'],'You receive ₦10,000 cash and a very long hug.'],prep)}
+
+/* ============ HAGGLE ============ */
+function haggle(item,price,vendor,done){
+ const min=Math.round(price*(0.72+Math.random()*.14-S.sk.comm*.012)/50)*50;let ask=price,round=0;
+ const lines=['Corper, this is already the last price!','Ah ah, you want to kill me? Add small something.','Na for you I dey reduce am.','Customer, na better quality be this one.'];
+ const step=m=>{view({a:'market',t:'Haggling: '+item,x:[[vendor,m],`Asking price: <b>${fmt(ask)}</b> (round ${Math.min(round+1,3)} of 3)`],c:
+  (round<3?[{t:'Offer 40% off',f:()=>off(.4)},{t:'Offer 25% off',f:()=>off(.25)},{t:'Offer 10% off',f:()=>off(.1)}]:[]).concat([
+  {t:'Pay '+fmt(ask),p:1,d:total()<ask,f:()=>fin(ask)},{t:'Walk away',f:()=>{if(chance(.5+S.sk.comm*.03)){round++;ask=Math.max(min,Math.round((ask+min)/100)*50);step('Corper! Come back! '+fmt(ask)+', final!')}else done(null)}}])})};
+ const off=p=>{const o=Math.round(ask*(1-p)/50)*50;if(o>=min){snd(660);fin(o,1)}else{round++;ask=Math.max(min,Math.round((ask+o)/100)*50);step(rnd(lines))}};
+ const fin=(p,bargain)=>{if(!pay(p)){toast('Not enough money',1);return done(null)}toast('Paid '+fmt(p)+(bargain?' (nice haggle!)':''));done(p)};
+ step(`Corper, come and buy! ${fmt(ask)} only.`);
+}
+
+/* ============ JOURNEY ============ */
+function journey(){
+ S.phase='pre';S.ch='Chapter 2: Welcome to Camp';S.day=3;S.min=7*60;rollWx();
+ view({a:'park',t:'Journey to camp',x:['The motor park is chaos: conductors shouting destinations, women selling pure water, a preacher on a megaphone.',['Conductor','Ajagun Hill camp! Ajagun Hill! Corper, enter!']],c:[
+  {t:'Long-distance bus',s:'About ₦4,500. Comfortable. Fewer events.',d:total()<3000,f:()=>ride('bus',4500,1)},
+  {t:'Danfo and korope relay',s:'About ₦2,500. Cheap and chaotic. More events.',d:total()<1500,f:()=>ride('danfo',2500,2)},
+  {t:'Hitch a ride with a family friend',s:'Free. Slow, with extra events.',f:()=>ride('free',0,2)},
+  {t:'Book on PALAVA RIDE',s:'₦9,000. Smooth ride.',d:total()<9000,f:()=>ride('ride',9000,0)}]});
+}
+function ride(kind,price,ev){
+ const go=p=>{if(p===null){journey();return}S.f.pays=p;tick(120);weatherHit();
+  const n=ev;const loop=i=>{if(i>=n)return arriveGate();palava('travel',()=>loop(i+1))};loop(0)};
+ if(kind==='free'){go(0);return}
+ if(kind==='ride'){if(!pay(price)){toast('Not enough money',1);return journey()}go(price);return}
+ haggle(kind==='bus'?'Long-distance fare':'Danfo fare',price,'Driver',go);
+}
+function weatherHit(){if(isRain()){hp(-3);en(-5);toast('Rain soaked your clothes',1)}else if(S.wx==='harmattan'){hp(-2);toast('Dusty harmattan air')}}
+
+/* ============ CAMP REGISTRATION ============ */
+function arriveGate(){
+ S.min=11*60;
+ view({a:'gate',t:'Camp gate',x:['The gate is a sea of white T-shirts, suitcases and nervous faces. A soldier checks your call-up letter.',['Soldier','Corper! Move! Do not stand there! Go and register!'],S.f.light?'Your light bag makes the crowd easier to cut through.':S.f.heavy?'Your heavy bag makes every step a struggle.':''],c:[{t:'Enter the camp',p:1,f:()=>queue(0)}]});
+}
+function queue(st){
+ const names=['Accreditation','Documentation','Kit collection','Hostel allocation'];
+ if(st>=4)return roommates();
+ const n=1+Math.floor(Math.random()*8),L=['A','B','C'][Math.floor(Math.random()*3)];
+ const correct=`Desk ${L}${n}`,opts=[correct,`Desk ${L}${n+1}`,`Desk ${['A','B','C'].filter(x=>x!==L)[0]}${n}`].sort(()=>Math.random()-.5);
+ const choose=o=>{
+  if(o===correct){tick(25);toast('Right queue ✅');return hurdle(st)}
+  tick(50);en(-6);rep('camp',-1);res([['Officer','Wrong queue! Can you not read? Go back!'],'You lose almost an hour before finding the right line.'],()=>hurdle(st),'queue');
+ };
+ view({a:'queue',t:'Registration: '+names[st],x:['Your call-up letter says:',['Letter',`<b>${names[st]}: ${correct}</b>`],'Three queues look identical. Which one is yours?'],c:opts.map(o=>({t:o,f:()=>choose(o)}))});
+}
+function hurdle(st){
+ if(st===1&&!S.f.printed)return view({a:'queue',t:'Missing document',x:[['Official','Where is your printout?']],c:[{t:'Pay ₦1,000 at the camp print shop',d:total()<1000,f:()=>{pay(1000);tick(40);res(['Reprinted. The queue behind you is not happy.'],()=>queue(2))}},{t:'Plead',f:()=>{ok('comm',.4)?res(['The official softens and lets it pass.'],()=>queue(2)):(rep('camp',-2),tick(90),res(['Plead failed. You must queue again.'],()=>queue(1)))}}]});
+ if(st===2&&chance(.4))return palava('camp',()=>queue(3));
+ queue(st+1);
+}
+const RM_F=['Ifeoma','Bisi','Zainab'],RM_M=['Sule','Kunle','Chidi'];
+function roommates(){
+ const rm=rnd(S.g==='f'?RM_F:RM_M);S.f.rm=rm;
+ view({a:'hostel',t:'Your hostel room',x:['Twenty-four bunk beds, a single fan, and a lot of noise.',[rm,`Hello! Are you the new person on this side? I'm ${rm}. Please take that bunk before somebody does.`]],c:[
+  {t:'Top bunk by the window',s:'Fresh air, but rain can leak in',f:()=>{S.f.bed='window';parade1()}},
+  {t:'Bottom bunk near the door',s:'Easy access. Noisy.',f:()=>{S.f.bed='door';parade1()}},
+  {t:'Bottom bunk beside '+rm,s:'Make a friend',f:()=>{S.f.bed='friend';rep('friend',2);parade1()}}]});
+}
+function parade1(){
+ S.ch='Chapter 3: Camp PALAVA';S.phase='camp';
+ res([['Whistle','Falling in! All corps members to the parade ground!'],'Your first parade is about to begin. Camp life starts now.'],()=>{S.campDay=1;S.slot=0;S.min=5*60;campHub()},'parade','March to camp life');
+}
+
+/* ============ CAMP HUB ============ */
+const SLOTS=['Morning','Afternoon','Evening'];
+function campHub(){
+ S.phase='camp';applyCheers();save();
+ if(S.slot>=3)return campNight();
+ const sl=S.slot;S.min=[6*60,12*60,16*60][sl];
+ const use=()=>{S.slot++;campHub()};
+ const lowE=S.en<15;
+ view({a:'parade',t:`Camp week ${S.campDay} of 3: ${SLOTS[sl]}`,x:[`Camp reputation: <b>${S.rep.camp}</b>. Choose an activity.`,lowE?'You are exhausted. Rest soon.':''],c:[
+  {t:'Parade',s:sl===0?'Timing mini-game':'Morning only',d:sl!==0||S.f['pd'+S.campDay],f:()=>{S.f['pd'+S.campDay]=1;barGame('Morning parade','Tap when the marker hits the green zone.',3,pts=>{rep('camp',pts>=2?2:-1);res([pts>=2?'Your platoon commander nods approvingly. Clean salute.':'You were off beat. Someone laughs.'],use,'parade')})}},
+  {t:'Skip parade',s:sl===0?'Risky':'Morning only',d:sl!==0||S.f['pd'+S.campDay],f:()=>{S.f['pd'+S.campDay]=1;if(chance(.6)){rep('camp',-3);hp(-8);res(['You were caught. Frog jump punishment in the sun.'],use,'parade')}else res(['Nobody noticed. You sleep another hour.'],()=>{en(15);use()},'hostel')}},
+  {t:'SAED skill acquisition',s:'Learn a skill',f:saed.bind(null,use)},
+  {t:'Mammy Market',s:'Food, haircut, friends',f:()=>mammy(use)},
+  {t:'Sports',s:'Football penalties or volleyball',f:()=>sports(use)},
+  {t:'Drama and cultural dance',s:'Creativity and talent show',f:()=>arts(use)},
+  {t:'Man O War drills',s:'Fitness, tiring',f:()=>manowar(use)},
+  {t:'Quiz competition',f:()=>quiz(use)},
+  {t:'Rest or clinic',s:'Recover health and energy',f:()=>{hp(25);en(30);tick(90);res(['The nurse gives you paracetamol and advice. You rest.'],use,'clinic')}}]});
+}
+function saed(use){view({a:'hall',t:'SAED workshop',x:['Which skill do you want to learn?'],c:[['photo','Photography'],['tech','Web and phone repair'],['business','Small business'],['create','Tailoring and design'],['teach','Teaching methods']].map(([k,n])=>({t:n,f:()=>{sk(k,S.pers==='Academic'?3:2);en(-8);res(['Two hours of class. Your notebook is full.'],use,'hall')}}))})}
+function mammy(use){view({a:'market',t:'Mammy Market',x:['Music, frying oil, hair clippers and a lot of "Corper!" calls.'],c:[
+ {t:'Buy jollof rice and chicken',s:'About ₦1,500',f:()=>haggle('Rice and chicken',1500,'Mama Put',p=>{if(p!==null){en(30);hp(5)}res([p===null?'You leave hungry.':'The food is hot and big.'],use,'market')})},
+ {t:'Get a haircut',s:'About ₦1,000',f:()=>haggle('Haircut',1000,'Barber',p=>{if(p!==null){rep('friend',1);hp(0)}res([p===null?'You keep your hair.':'Fresh cut, fresh corper.'],use,'market')})},
+ {t:'Chat with vendors',s:'Free. Learn local tips',f:()=>{sk('comm',1);rep('friend',1);res([['Vendor','Corper, which state do you want? Osun is calmer. Oyo has more jobs!'],'You also learn which platoon leader is strict.'],use,'market')}},
+ {t:'Back',f:campHub}]})}
+function sports(use){view({a:'field',t:'Sports field',x:['Your platoon needs players.'],c:[
+ {t:'Football penalties',f:()=>penalty(g=>{sk('fitness',1);rep('camp',g>=2?2:0);en(-12);res([`You scored ${g} of 3. ${g>=2?'The platoon chants your name.':'Not your day.'}`],use,'field')})},
+ {t:'Volleyball',f:()=>{const w=ok('fitness',.4);en(-10);rep('camp',w?2:0);sk('fitness',1);res([w?'Your team wins the set. Bragging rights secured.':'You lose, but you made friends.'],use,'field')}},
+ {t:'Back',f:campHub}]})}
+function penalty(done){let k=0,g=0;const shot=()=>view({a:'field',t:`Penalty ${k+1} of 3`,x:['Platoon final. The crowd is loud. Pick a corner.',`Goals so far: ${g}`],c:['Left','Middle','Right'].map((n,i)=>({t:n,f:()=>{const gk=Math.floor(Math.random()*3);const saved=gk===i&&chance(.8-S.sk.fitness*.04);if(!saved)g++;k++;snd(saved?180:520);k>=3?done(g):shot()}}))});shot()}
+function arts(use){view({a:'stage',t:'Cultural group',x:['The platoon is preparing a cultural display with talking drums and Yoruba dance.'],c:[
+ {t:'Lead the dance',f:()=>{const w=ok('create',.4);S.talent+=w?2:0;rep('camp',w?2:0);sk('create',1);en(-10);res([w?'You lead the group perfectly. Applause.':'You miss a step but laugh it off.'],use,'stage')}},
+ {t:'Write and perform a short drama',f:()=>{const w=ok('comm',.4);S.talent+=w?2:1;rep('camp',w?2:1);sk('comm',1);en(-10);res([w?'The skit about "NEPA and the Landlord" has the camp in stitches.':'The punchline fell flat, but the crowd was kind.'],use,'stage')}},
+ {t:'Back',f:campHub}]})}
+function manowar(use){view({a:'parade',t:'Man O War',x:['Obstacle course, crawling under nets, drill commands. It is not for the faint-hearted.'],c:[{t:'Give it everything',f:()=>{const w=ok('fitness',.45);hp(w?-8:-16);en(-22);sk('fitness',1);rep('camp',w?2:0);res([w?'You finish near the front. Soldiers respect you.':'You collapse at the end. The medics hand you water.'],use,'parade')}},{t:'Pace yourself',f:()=>{hp(-6);en(-14);rep('camp',1);res(['You finish in the middle. No glory, no injury.'],use,'parade')}}]})}
+const QZ=[['NYSC was established in which year?',['1963','1973','1983'],1],['How long is the national service year?',['6 months','12 months','24 months'],1],['Which head of state established the scheme?',['Gen. Yakubu Gowon','Gen. Sani Abacha','Pres. Shehu Shagari'],0]];
+function quiz(use){let i=0,s=0;const q=()=>view({a:'hall',t:`Quiz ${i+1} of 3`,x:[QZ[i][0]],c:QZ[i][1].map((t,j)=>({t,f:()=>{if(j===QZ[i][2])s++;i++;i<3?q():(sk('teach',1),rep('camp',s>=2?2:0),res([`Score: ${s}/3. ${s>=2?'You are a walking NYSC handbook.':'Better luck next time.'}`],use,'hall'))}}))});q()}
+function barGame(title,intro,rounds,done){let r=0,pts=0;const next=()=>{view({a:'parade',t:title,x:[intro,`Round ${r+1} of ${rounds}`],html:'<div class="bar2"><div class="zone"></div><div id="mk"></div></div>',c:[{t:'Now!',p:1,f:hit}]});let p=0,d=1;const sp=1.6+r*.8;TM=setInterval(()=>{p+=d*sp;if(p>=100||p<=0)d*=-1;const m=$('#mk');if(m)m.style.left=p+'%';window._p=p},16)};
+ const hit=()=>{clearInterval(TM);const g=Math.abs(window._p-50)<=12+S.sk.fitness;if(g)pts++;r++;snd(g?600:200);if(r>=rounds)done(pts);else{toast(g?'Sharp! ✅':'Off beat ❌',!g);next()}};next()}
+function campNight(){
+ S.min=21*60;
+ view({a:'night',t:'Lights out soon',x:[`Week ${S.campDay} ends. The hostel buzzes with gist and mosquitoes.`],c:[
+  {t:'Sleep',f:()=>endCampDay(()=>{})},
+  {t:'Gist with '+S.f.rm,s:'Build a friendship',f:()=>{rep('friend',2);endCampDay(()=>{})}},
+  {t:'Sneak out to Mammy Market after lights out',s:'Risky',f:()=>{if(chance(.4)){rep('camp',-3);hp(-6);res(['Caught! Frog jump at midnight.'],()=>endCampDay(()=>{}),'night')}else{rep('friend',2);en(5);res(['Suya and gist under the stars. Nobody saw you.'],()=>endCampDay(()=>{}),'night')}}}]});
+}
+function endCampDay(){
+ const nxt=()=>{S.campDay++;S.slot=0;S.day+=7;S.hp=clamp(S.hp+15,0,100);S.en=100;rollWx();if(S.campDay>3)return passOutCamp();campHub()};
+ if(chance(.75))palava('camp',nxt);else nxt();
+}
+function passOutCamp(){
+ S.ch='Chapter 4: The Posting';
+ const sc=S.rep.camp+S.talent;const t=sc>=8?'Your platoon wins the talent show and best-dressed parade! You are named "Best Corps Member".':sc>=3?'Your platoon takes second place. You are proud of the memories.':'Your platoon does not win, but you survived camp and that is the real prize.';
+ if(sc>=8)rep('camp',2);
+ res(['The final day of camp. Everyone is tired, sunburnt and emotional.',t,'Then comes the moment everyone has been waiting for: the posting list.'],posting,'ceremony','Collect my posting letter');
+}
+
+/* ============ POSTING ============ */
+const CITIES={Oyo:['Ibadan','Ogbomoso','Oyo Town'],Osun:['Osogbo','Ile-Ife','Ilesa','Iwo']};
+const POOLS={Architecture:['arch','eng','office'],'Computer Science':['ict','school','office'],Education:['school','school','ngo'],'Mass Communication':['media','ngo','office'],Nursing:['hospital','school','ngo'],Agriculture:['agro','ngo','school'],Accounting:['office','biz','school'],Engineering:['eng','eng','office']};
+const PPAN={school:['Greenfield Comprehensive High School','Unity Model College','Hillcrest Primary School'],arch:['Arc Studio Nigeria Ltd'],office:['Local Government Secretariat','State Ministry Office'],hospital:['Heritage Specialist Clinic'],ict:['BrightByte ICT Solutions'],ngo:['Hope Bridge Foundation'],media:['City Pulse Radio 98.7'],agro:['GreenAcre Farms Ltd'],eng:['Terra Build Engineering'],biz:['Prime Ledger Consulting']};
+const PPAL={school:'Secondary / Primary School',arch:'Architectural firm',office:'Government office',hospital:'Hospital',ict:'ICT company',ngo:'NGO',media:'Media company',agro:'Agricultural company',eng:'Engineering company',biz:'Private company'};
+const PPAB={school:5000,arch:20000,office:0,hospital:10000,ict:25000,ngo:5000,media:10000,agro:8000,eng:20000,biz:25000};
+function rollPPA(){const st=rnd(['Oyo','Osun']),city=rnd(CITIES[st]),type=rnd(catInfo(S.cat||catOf(S.course))[3]);S.ppa={st,city,type,name:rnd(PPAN[type]),pay:PPAB[type]};return S.ppa}
+function posting(){
+ const p=rollPPA();
+ view({a:'envelope',t:'Your posting letter',x:['You tear open the envelope...',['Posting letter',`PPA: Congratulations, you have been posted to <b>${p.name}</b>, ${p.city}, <b>${p.st} State</b>. (${PPAL[p.type]})`],'Music rises. Your friends scream. Somebody starts dancing.'],c:[
+  {t:'Accept my posting',p:1,f:accommodation},
+  {t:'Request redeployment',s:'Costs reputation. Might be denied.',f:()=>{rep('camp',-2);if(chance(.45)){rollPPA();res(['Request approved after a long queue. New posting:',`${S.ppa.name}, ${S.ppa.city}, ${S.ppa.st} State (${PPAL[S.ppa.type]})`],accommodation)}else res(['Request denied. The official smiles: "Welcome to your PPA, corper."'],accommodation)}}]});
+}
+
+/* ============ ACCOMMODATION ============ */
+const HOMES=[{n:'Hostel bed space',rent:10000,c:'Cheap, shared, basic',comfort:1},{n:'Shared apartment',rent:15000,c:'Split with other corpers',comfort:2},{n:'Room self-contained',rent:25000,c:'Own bathroom, small kitchen',comfort:3},{n:'One-bedroom flat',rent:40000,c:'Space and comfort',comfort:4}];
+function accommodation(){
+ S.ch='Chapter 5: New City';S.phase='pre';S.month=0;S.week=0;S.day+=3;S.min=10*60;rollWx();S.bank+=0;
+ const hs=HOMES.map(h=>({t:h.n,s:`${fmt(h.rent)}/month, ${fmt(h.rent)} caution fee. ${h.c}`,d:total()<h.rent*2,f:()=>agent(h)}));
+ hs.push({t:'Sleep on a fellow corper\'s floor',s:'Free for now. Costs friendship. No privacy.',f:()=>{rep('friend',-1);settle({n:'Borrowed floor space',rent:0,comfort:0})}});
+ if(['school','hospital'].includes(S.ppa.type))hs.push({t:'Staff accommodation',s:'Free rent. Basic, far from town.',f:()=>settle({n:'Staff quarters',rent:0,comfort:1})});
+ view({a:'city',t:'House hunting in '+S.ppa.city,x:['You have reported at your PPA and been told to find a place to live. An agent greets you at the junction.',['Agent','Madam/Oga, I get correct house! But inspection fee na ₦5,000 first.'],`Money available: ${fmt(total())}`],c:hs});
+}
+function agent(h){
+ view({a:'city',t:'Agent scam attempt',x:['Something about this agent feels shady.',['Agent','Pay the inspection fee first. Many corpers are looking, so hurry!']],c:[
+  {t:'Refuse and verify with the landlord directly',s:'Comm check',f:()=>ok('comm',.45)?(S.f.agentOk=1,rep('friend',1),settle(h)):res(['The agent disappears. You find a house after hours of wasted walking.'],()=>settle(h),'city')},
+  {t:'Pay ₦5,000 inspection fee',d:total()<5000,f:()=>{pay(5000);res(['The agent collects it and says, "Wait here, let me call the landlord." He never returns. 😬'],()=>settle(h),'city')}},
+  {t:'Ask a colleague at PPA for a trusted agent',f:()=>{rep('prof',1);res(['Your colleague connects you with a trusted landlord. No fee, no wahala.'],()=>settle(h),'city')}}]});
+}
+function settle(h){
+ if(h.rent&&!pay(h.rent*2)){toast('Cannot afford caution fee',1);return accommodation()}
+ S.home=h;
+ view({a:'room',t:'Moving in: '+h.n,x:['The landlord hands you a key and a long list of house rules.',['Landlord','No loud music. Pay on time. And do not leave the tap running.'],'The room is empty. You need basics.'],c:[
+  {t:'Buy basic essentials (mattress, bucket, stove)',s:'₦12,000',d:total()<12000,f:()=>{pay(12000);S.f.furn='basic';S.furniture=1;cont()}},
+  {t:'Sleep on the floor with a borrowed mat',s:'Free. Tough on the body.',f:()=>{S.f.furn='none';S.furniture=0;hp(-8);rep('friend',1);cont()}},
+  {t:'Buy only a mattress and borrow the rest',s:'₦6,000. Neighbours will help.',d:total()<6000,f:()=>{pay(6000);S.f.furn='lite';S.furniture=0;rep('friend',1);cont()}}]});
+ function cont(){res(['Light, water and a shaky stool. Home sweet home.','Tomorrow is your first official day at the PPA.'],firstDay,'room')}
+}
+
+/* ============ FIRST DAY AT PPA ============ */
+function firstDay(){
+ S.month=1;S.ch='Chapter 5: New City';S.min=6*60+30;S.day++;rollWx();
+ view({a:'ppa',t:'Mission: First day at PPA',x:['Objective: Reach your PPA before 8:00 AM.',`Requirement checks: PPA letter ✅, appropriate clothes, transport money.`],c:[
+  {t:'Wear official khaki and white',s:'Appropriate',f:()=>transport(1)},
+  {t:'Wear casual clothes',s:'Faster, but less professional',f:()=>transport(0)}]});
+}
+function transport(dress){
+ view({a:'city',t:'How will you get there?',x:[`Weather: ${WX[S.wx]}. It is ${clock()}.`],c:[
+  {t:'Okada (motorcycle)',s:'₦800. Fast but risky',d:total()<800,f:()=>arrive(dress,30,800,.2)},
+  {t:'Keke (tricycle)',s:'₦500. Medium',d:total()<500,f:()=>arrive(dress,45,500,.1)},
+  {t:'Danfo bus',s:'₦300. Cheapest, traffic',d:total()<300,f:()=>arrive(dress,70,300,.25)},
+  {t:'Walk',s:'Free. Tiring.',f:()=>arrive(dress,80,0,0)}]});
+}
+function arrive(dress,mins,cost,risk){
+ pay(cost);tick(mins+(isRain()?25:0)+Math.floor(Math.random()*20));weatherHit();
+ const crisis=chance(risk),late=S.min>8*60;
+ if(crisis)return palava('travel',()=>done());
+ done();
+ function done(){
+  tick(5);const L=S.min>8*60;
+  let t,sc,r;
+  if(!L&&dress){t='SUCCESS: You arrive early and neat. The supervisor smiles.';r=3}
+  else if(!L){t='SUCCESS (with notes): On time, but the supervisor eyes your casual clothes.';r=1}
+  else if(S.min<=8*60+45){t='NEUTRAL: Late. You explain honestly and apologise.';r=0}
+  else{t='FAIL: Very late. The supervisor is not impressed.';r=-3}
+  S.attend++;rep('ppa',r);rep('prof',r>1?1:0);
+  res([t,['Supervisor','Welcome, corper. Let me show you around. You will be with us for the next nine months.']],()=>{S.week=1;S.month=1;chapterFor();weekStart()},'ppa');
+ }
+}
+
+/* ============ MONTH LOOP ============ */
+function chapterFor(){const m=S.month;S.ch=m===1?'Chapter 5: New City':m<=3?'Chapter 6: PPA Life':m<=5?'Chapter 7: CDS':m<=8?'Chapter 8: Surviving the Service Year':'Chapter 9: The Final Month'}
+function weekStart(){
+ S.phase='life';S.month=Math.max(1,Math.ceil(S.week/4));chapterFor();S.ap=10;S.wk={};S.min=8*60;rollWx();
+ const go=()=>{save();monthHub()};
+ if(chance(.5))palava('life',go);else go();
+}
+function monthHub(){
+ S.phase='life';S.wk=S.wk||{};applyCheers();applyInbox();
+ if(S.ap<=0)return endWeek();
+ const lowE=S.en<15,cdsDone=S.cdsWeek===S.week;
+ view({a:'city',t:`Week ${S.week} of 36`,x:[`${S.ppa.name}, ${S.ppa.city}, ${S.ppa.st} State. Month ${S.month} of 9. Activities left this week: <b>${S.ap}</b> of 10.`,lowE?'You are very tired. Rest to recover.':'',!cdsDone&&S.ap<=3?'Reminder: you have not attended CDS this week.':''],c:[
+  {t:'Work at PPA',s:'Professional rep and skills',f:work},
+  {t:'Attend CDS meeting',s:cdsDone?'Done for this week':`Meetings attended: ${S.cds}`,d:cdsDone,f:cds},
+  {t:'Side hustle',s:'Earn extra money',f:hustle},
+  {t:'Socialise',s:'Friends, romance, community',f:social},
+  {t:'Lifestyle and nightlife',s:'Parties, gym, shopping, betting',f:lifestyle},
+  {t:'Explore '+S.ppa.st+' State',s:'Culture and food',f:explore},
+  {t:'Rest or cook',s:'Recover',f:rest},
+  {t:'Save game',s:ME?'Save to your account':'Save on this device',f:()=>saveNow()},
+  {t:'End week early',s:S.week%4===0?'Month end: get paid and pay bills':'Skip remaining activities',f:endWeek}]});
+}
+const use=()=>{S.ap--;tick(90);if(S.ap===5&&S.phase==='life'&&chance(.3))return palava('life',monthHub);monthHub()};
+function endWeek(){
+ if(S.week%4===0)return endMonth();
+ S.en=clamp(S.en+30,0,100);S.hp=clamp(S.hp+6,0,100);S.day+=7;save();
+ const lines=['Sunday arrives. You wash clothes, call home and prepare for Monday.',`Week ${S.week} complete. ${4-S.week%4} week${4-S.week%4>1?'s':''} until allawee and bills.`];
+ res(lines,()=>{S.week++;S.month=Math.ceil(S.week/4);weekStart()},'home','Start week '+(S.week+1));
+}
+/* ---- WORK ---- */
+const W={
+ school:[['A class of 40 students is noisy and your lesson plan is half done.',[['Use a game to teach',  'teach',.45,'The class engages. A student asks for more!','The game becomes chaos.'],['Strict approach','lead',.5,'Quiet and focused.','Students lose interest.'],['Ask a senior teacher for help','comm',.6,'She shares a great trick.','She is busy and you are alone.']]],['Marking 60 assignments before tomorrow.',[['Stay up marking','teach',.5,'All marked. Fair feedback.','You rush and make mistakes.'],['Create a marking scheme','create',.55,'You finish early with accurate marks.','Scheme confuses you.'],['Ask students to peer-mark','lead',.45,'Surprisingly effective.','Marks are inflated.']]]],
+ arch:[['The client wants a floor plan revised by tomorrow.',[['Redraw in AutoCAD','tech',.45,'Perfect drawing. Client approves.','Software crashes before saving.'],['Hand sketch first, then digitise','create',.5,'Clean, fast, impressive.','The sketch is messy.'],['Ask senior drafter to review','comm',.55,'Helpful feedback.','He is not available.']]],['A site visit: the foundation looks off.',[['Measure and report accurately','build',.45,'You catch a 5cm error in time.','Your reading is wrong.'],['Photograph and document','photo',.5,'Photos back your report.','Blurry photos.'],['Call the foreman','lead',.5,'He fixes it quickly.','He gets defensive.']]]],
+ office:[['Boss wants a 20-page report summarised before 2 PM.',[['Summarise manually','comm',.5,'Neat and accurate.','You miss key points.'],['Use spreadsheet shortcuts','tech',.45,'Quick and polished.','You corrupt a file.'],['Share work with a colleague','lead',.5,'Teamwork wins.','Colleague delivers late.']]],['The filing room is chaotic.',[['Reorganise by date','lead',.5,'Everything easy to find.','You mix two folders.'],['Create a digital index','tech',.45,'Boss is impressed.','Takes too long.'],['File only urgent items','business',.55,'Practical and effective.','Something urgent gets missed.']]]],
+ hospital:[['A busy outpatient clinic with long queues.',[['Organise the queue','lead',.5,'The wait shortens. Patients thank you.','Chaos grows.'],['Assist the nurse with vitals','fitness',.5,'You do it well.','You record wrong values and are corrected.'],['Educate patients on hygiene','comm',.55,'A good talk. People listen.','Few listen.']]],['Inventory of drugs needs checking.',[['Count and log carefully','business',.5,'Accurate stock-take.','A count error found later.'],['Use a spreadsheet','tech',.45,'Neat records.','File lost.'],['Ask the pharmacist','comm',.6,'Quick help.','She is busy.']]]],
+ ict:[['A client website is down and they are calling every five minutes.',[['Debug the code','tech',.45,'You find the bug and fix it.','You make it worse.'],['Restore from backup','tech',.55,'Back online in minutes.','Backup is outdated.'],['Calm the client first','comm',.55,'Client is patient.','Client escalates.']]],['Prepare a demo for a new client.',[['Build a quick prototype','create',.45,'Client is wowed.','Prototype has bugs.'],['Practise the pitch','comm',.5,'Smooth pitch.','You stammer.'],['Ask a senior dev','lead',.5,'He helps.','He is in a meeting.']]]],
+ ngo:[['You are to organise a community health outreach.',[['Plan logistics','lead',.5,'Smooth event, 100 people served.','Venue clash.'],['Make flyers','create',.55,'Beautiful flyers draw a crowd.','Prints blurry.'],['Talk to local leaders','comm',.55,'They mobilise the community.','They are suspicious.']]],['A donor is visiting tomorrow.',[['Prepare a presentation','tech',.5,'Impressive deck.','Projector fails.'],['Take them on a field tour','lead',.5,'They love it.','Rain disrupts the visit.'],['Write a thank-you report','comm',.55,'Heartfelt and clear.','Too long.']]]],
+ media:[['Breaking local story and your editor wants copy in an hour.',[['Write fast','comm',.5,'Clean copy delivered.','Typos everywhere.'],['Go on location and take photos','photo',.45,'Great photos get front page.','Phone battery dies.'],['Phone sources','comm',.5,'Got the quote!','Source hangs up.']]],['Edit a short video for the evening show.',[['Edit and sync audio','tech',.45,'Crisp edit.','Audio out of sync.'],['Add local music and captions','create',.5,'Viewers love it.','Overdone.'],['Ask the senior editor','comm',.55,'Good tips.','She is on air.']]]],
+ agro:[['A section of the farm shows signs of pest damage.',[['Identify the pest','build',.45,'Correct diagnosis.','Wrong guess.'],['Call an extension officer','comm',.55,'Expert advice arrives.','He cannot come.'],['Apply organic treatment','business',.5,'Works well.','Little effect.']]],['Record harvest data.',[['Use a spreadsheet','tech',.45,'Neat data.','Entry errors.'],['Do manual tally','business',.55,'Accurate.','Page torn in rain.'],['Train workers to log it','lead',.5,'They adopt it.','They forget.']]]],
+ eng:[['A machine on site has stopped working.',[['Diagnose the fault','tech',.45,'Found the loose wire.','Missed the fault.'],['Check the manual and ask foreman','comm',.55,'Fixed together.','Manual is missing pages.'],['Replace the part','build',.5,'Back to work.','Wrong part.']]],['Site safety inspection is due.',[['Inspect thoroughly','build',.5,'Two hazards found and fixed.','Missed one.'],['Brief workers','lead',.5,'Everyone uses helmets.','Few listen.'],['Document with photos','photo',.55,'Report complete.','Photos lost.']]]],
+ biz:[['A client queries an invoice discrepancy.',[['Reconcile the accounts','business',.45,'Found the error. Client happy.','Numbers still do not match.'],['Call the client calmly','comm',.55,'They accept your explanation.','They stay upset.'],['Ask the senior accountant','lead',.5,'She fixes it fast.','She is on leave.']]],['End of month closing.',[['Work late','business',.5,'Books close smoothly.','Fatigue causes mistakes.'],['Automate with a spreadsheet','tech',.45,'Hours saved.','Formula error.'],['Divide the work','lead',.5,'Team finishes early.','Someone is absent.']]]]};
+function work(){
+ if(S.en<10)return res(['Too tired to work. Rest first.'],monthHub);
+ const sc=rnd(W[S.ppa.type]);
+ view({a:S.ppa.type==='school'?'school':'ppa',t:'At the PPA: '+PPAL[S.ppa.type],x:[sc[0]],c:sc[1].map(o=>({t:o[0],s:'Skill: '+o[1],f:()=>{
+  S.attend++;en(-18);const w=ok(o[1],o[2]);
+  if(w){S.work++;rep('prof',2);rep('ppa',1);sk(o[1],1)}else rep('ppa',-1);
+  res([w?o[3]:o[4]],use,S.ppa.type==='school'?'school':'ppa')}}))});
+}
+/* ---- CDS ---- */
+const CDSG=['Health awareness','Environmental sanitation','Education and literacy','Youth empowerment'];
+function cds(){
+ if(!S.cdsGroup)return view({a:'cds',t:'Choose your CDS group',x:['Every Thursday, corpers gather for Community Development Service. Which group will you join?'],c:CDSG.map(g=>({t:g,f:()=>{S.cdsGroup=g;cdsMeet()}}))});
+ cdsMeet();
+}
+const CDSM=[['Tree planting along a dusty road','fitness'],['Sanitation drive in the market','lead'],['Health talk at a community hall','comm'],['Teaching a literacy class','teach'],['Painting a school wall','create']];
+function cdsMeet(){
+ S.cdsWeek=S.week;const m=rnd(CDSM);
+ view({a:'cds',t:'CDS: '+S.cdsGroup,x:[`Today: <b>${m[0]}</b>.`,['Group coordinator','Corpers, we have 3 hours. Who wants to lead?']],c:[
+  {t:'Lead the project',s:'Skill: '+m[1]+' and leadership',f:()=>{en(-16);const w=ok(m[1],.45)||ok('lead',.4);S.cds++;if(w){rep('comm',3);sk('lead',1);0}else rep('comm',1);res([w?'You lead brilliantly. Community members hold your hand and say thank you.':'It was messy but you got it done.'],use,'cds')}},
+  {t:'Join and support',f:()=>{en(-10);S.cds++;rep('comm',1);rep('friend',1);res(['You work hard and make friends along the way.'],use,'cds')}},
+  {t:'Skip this meeting',s:'Your clearance may suffer',f:()=>{rep('comm',-2);res(['Your coordinator notes your absence.'],use,'cds')}}]});
+}
+/* ---- HUSTLE ---- */
+const HU=[['Tutoring and WAEC lessons','teach',12000],['Photography gigs','photo',15000],['Freelance design or tech work','tech',20000],['Small-scale farming and poultry','build',10000],['Sell snacks and provisions','business',12000],['Motorcycle delivery','driving',12000],['POS agent (cash withdrawal point)','business',9000],['Cook and sell jollof and moi moi','create',13000],['MC and event hosting','comm',14000],['Content creation (video and social)','create',9000],['Tailoring and hair braiding','create',11000],['Data and airtime reselling','tech',8000]];
+function hustle(){
+ view({a:'phone',t:'Side hustles',x:['Pick a hustle for this action. Higher skill pays more. Passive options are at the bottom.'],c:HU.map(h=>({t:h[0],s:`Skill: ${h[1]} (${S.sk[h[1]]}). About ${fmt(h[2]*.3*(0.6+S.sk[h[1]]*.14))}`,f:()=>{
+  if(S.en<20)return res(['Too tired. Rest first.'],monthHub);
+  en(-20);const w=ok(h[1],.5);let pay_=Math.round(h[2]*.3*(0.6+S.sk[h[1]]*.14)*(w?1.2:.5)/100)*100;
+  if(h[0].startsWith('Content')&&chance(.2)){pay_*=3;toast('A post went viral!')}
+  earn(pay_);S.hustleEarn+=pay_;S.hustles++;if(w)sk(h[1],1);
+  res([w?`Great day! You earn ${fmt(pay_)}.`:`Slow day. You earn only ${fmt(pay_)}.`],use,'pay')}})).concat([
+  {t:S.shop?(S.shop<3?'Upgrade your shop':'Shop fully upgraded ✅'):'Open a small shop or POS stand',s:S.shop?`Level ${S.shop}. Pays monthly profit. Upgrade ₦20,000`:'Invest ₦30,000 for passive monthly profit',d:S.shop>=3||total()<(S.shop?20000:30000),f:()=>{pay(S.shop?20000:30000);S.shop++;res([S.shop===1?'You rent a small stand, buy stock and paint the sign. Customers start coming.':'More stock, bigger shelf, better profit.'],use,'market')}},
+  {t:'Join ajo (thrift savings)',s:S.wk.ajo?'Paid for this week':`Pay ₦5,000 weekly. Get ₦21,000 after 4 payments. Paid in: ${S.thrift%4}/4`,d:total()<5000||!!S.wk.ajo,f:()=>{pay(5000);S.thrift++;S.wk.ajo=1;if(S.thrift%4===0){earn(21000,false);res(['Your ajo turn! ₦21,000 collected. Cooperative savings win.'],use,'pay')}else res(['Contribution recorded in the ajo book.'],use,'pay')}},
+  {t:'Back',f:monthHub}])});
+}
+/* ---- SOCIAL ---- */
+function social(){
+ view({a:'market',t:'Social life',x:['Who will you spend time with?'],c:[
+  {t:'Hang out with PPA colleagues',s:'₦2,000',d:total()<2000,f:()=>{pay(2000);rep('friend',2);rep('prof',1);en(-8);res(['Suya, small chops and gist about the boss. Everyone laughs.'],use,'market')}},
+  {t:S.romance?'Date with Dami':'Meet someone interesting',s:S.romance?'₦5,000. Romance +2':'A friend introduces you to Dami',d:S.romance&&total()<5000,f:()=>{if(!S.romance){S.romance=1;res(['You meet Dami at a mutual friend\'s birthday. Kind, funny and super organised.',['Dami','Hello, corper! Do you like amala?']],use,'market');return}pay(5000);S.romance+=2+(S.style>=2?1:0);en(-8);res(['A lovely evening with Dami, with jollof rice, music and laughter.'],use,'market')}},
+  {t:'Help a neighbour',s:S.wk.help?'Done this week':'Free',d:!!S.wk.help,f:()=>{S.wk.help=1;rep('comm',2);rep('friend',1);en(-10);res(['You carry water for an elderly neighbour. She prays for you for ten minutes.'],use,'home')}},
+  {t:'Call family',s:S.wk.call?'Done this week':'Free',d:!!S.wk.call,f:()=>{S.wk.call=1;en(15);rep('friend',1);res([['Mama','Are you eating? Is your landlord good? We are proud of you!']],use,'home')}},
+  {t:'Back',f:monthHub}]});
+}
+/* ---- LIFESTYLE ---- */
+function lifestyle(){
+ view({a:'market',t:'Lifestyle and nightlife',x:[`Style level: ${S.style}. Money available: ${fmt(total())}.`],c:[
+  {t:'Owambe party',s:'₦3,000 or spray more',d:total()<3000,f:()=>view({a:'stage',t:'Owambe',x:['Live band, jollof, aunties in gele and a DJ who will not stop.'],c:[
+    {t:'Attend modestly',s:'₦3,000',d:total()<3000,f:()=>{pay(3000);rep('friend',2);S.culture++;en(-8);res(['You eat well, dance well and go home happy.'],use,'stage')}},
+    {t:'Spray naira like a boss',s:'₦10,000. Everyone notices',d:total()<10000,f:()=>{pay(10000);rep('friend',3);S.style++;S.culture++;en(-12);res(['The MC shouts your name. Money rains, reputation grows, wallet cries.'],use,'stage')}},
+    {t:'Back',f:lifestyle}]})},
+  {t:'Lounge or club night',s:'₦10,000. Energy drain',d:total()<10000,f:()=>{pay(10000);en(-22);hp(-5);rep('friend',2);if(S.romance)S.romance++;let t='Great music and good company. You stumble home late.';if(chance(.3)&&total()>=4000){pay(4000);t='Loud music, great vibes and a shocking bill. You pay ₦4,000 extra.'}res([t],use,'night')}},
+  {t:'Gym session',s:'₦3,000. Fitness',d:total()<3000,f:()=>{pay(3000);sk('fitness',1);hp(5);en(-12);res(['Sweaty, sore, proud.'],use,'field')}},
+  {t:'Shop for clothes',s:'Haggle. Style and professionalism',f:()=>haggle('New outfit',15000,'Market trader',p=>{if(p!==null){S.style++;rep('prof',1)}res([p===null?'You leave empty-handed.':'You look sharp. People notice.'],p===null?lifestyle:use,'market')})},
+  {t:'Attend church or mosque',s:S.wk.church?'Done this week':'Free. Community and peace',d:!!S.wk.church,f:()=>{S.wk.church=1;hp(5);en(5);rep('comm',1);res(['A warm service, a good sermon and neighbours who greet you by name.'],use,'home')}},
+  {t:'Football viewing centre',s:'₦500. No betting, just banter',d:total()<500,f:()=>{pay(500);rep('friend',1);en(5);res(['The match is tense. Strangers become friends in the 90th minute.'],use,'market')}},
+  ...(CFG.bettingEnabled?[{t:'Sports betting shop (18+)',s:'Risky. The odds favour the house',f:()=>betting(false)}]:[]),
+  {t:'Back',f:monthHub}]});
+}
+function betting(placed){
+ view({a:'market',t:'NaijaBet9 betting shop',x:['A fictional licensed operator. 18+ only.','<b>Reminder:</b> the odds favour the house and most bettors lose over time. Never bet money you need for rent or food.',`Net result so far: ${S.betNet<0?'-':''}${fmt(Math.abs(S.betNet))}. Bets placed: ${S.bets}.`],c:[
+  {t:'Single bet: ₦1,000',s:'About 36% to win, pays ₦2,200',d:total()<1000,f:()=>placeBet(1000,.36,2.2)},
+  {t:'Combo bet: ₦2,000',s:'About 9% to win, pays 9x',d:total()<2000,f:()=>placeBet(2000,.09,9)},
+  {t:'Jackpot ticket: ₦500',s:'Under 1% to win ₦50,000',d:total()<500,f:()=>placeBet(500,.008,100)},
+  {t:'Leave the shop',p:1,f:()=>{S.urge=0;placed?use():lifestyle()}}]});
+}
+function placeBet(stake,p,m){
+ pay(stake);S.bets++;S.urge++;snd(220);
+ const w=chance(p);
+ if(w){const g=Math.round(stake*m);earn(g,false);S.betNet+=g-stake;}else{S.betNet-=stake;en(-4)}
+ const lines=[w?`You win ${fmt(Math.round(stake*m))}! Remember: luck is not a strategy.`:`Lost ${fmt(stake)}. The shop goes quiet around you.`];
+ if(S.urge>=4&&S.betNet<0)return view({a:'market',t:'Chasing your losses?',x:[...lines,'You have lost money and keep wanting "one more bet to recover it". That feeling is exactly how betting traps people.'],c:[
+  {t:'Stop and delete the app',s:'Best move',p:1,f:()=>{S.urge=0;hp(5);rep('friend',1);res(['You walk out feeling lighter. A smart decision.'],use,'home')}},
+  {t:'One more bet',f:()=>betting(true)}]});
+ view({a:'market',t:w?'Winner!':'Loser',x:lines,c:[{t:'Bet again',f:()=>betting(true)},{t:'Walk away',p:1,f:()=>{S.urge=0;use()}}]});
+}
+/* ---- EXPLORE ---- */
+function explore(){
+ const places=S.ppa.st==='Osun'?[['Sacred grove walk','grove'],['Heritage museum visit','hall'],['Craft market','market']]:[['Old palace quarter walk','city'],['Hilltop viewpoint','grove'],['Big city market','market']];
+ view({a:'grove',t:'Explore '+S.ppa.st,x:['Time to see what the state has to offer.'],c:[{t:'Walk around town',s:'Free. Small culture gain',f:()=>{S.culture+=0.5;en(-5);res(['You wander the streets, greet strangers in Yoruba and watch the city live.'],use,'city')}}].concat(places.map(p=>({t:p[0],s:'₦1,500 transport',d:total()<1500,f:()=>{pay(1500);S.explored++;S.culture++;en(-10);weatherHit();
+  const w=ok('photo',.5);if(w)sk('photo',1);res([`You spend hours soaking up the culture. ${w?'Your photos are stunning. You post them on PALAVA SOCIAL.':'Your phone camera is not great but memories stick.'}`,'You also eat well: amala, ewedu and gbegiri at a local buka. 🍲'],()=>{hp(5);use()},p[1])}})))});
+}
+/* ---- REST ---- */
+function rest(){
+ view({a:'room',t:'Rest or cook',x:['The generator next door is roaring again.'],c:[
+  {t:'Cook amala, ewedu and gbegiri',s:'₦2,000',d:total()<2000,f:()=>{pay(2000);en(35);hp(10);res(['Smooth amala, hot soup. You feel human again.'],use,'room')}},
+  {t:'Sleep for hours',f:()=>{en(40);hp(10);res(['Deep sleep. Not even the generator can stop you.'],use,'room')}}]});
+}
+
+/* ============ END OF MONTH ============ */
+function endMonth(){
+ const base=CFG.allowance+S.ppa.pay;let inc=base;
+ const delayed=S.month>1&&S.month<9&&!S.arrears&&chance(.25);
+ if(delayed){S.arrears=base;inc=0}else if(S.arrears){inc+=S.arrears;S.arrears=0}
+ if(delayed)return view({a:'phone',t:'Allawee delayed!',x:['Alert day, and your phone stays silent.',['Corpers group chat','Allawee don enter?? 😭'],'The bank calls it a "processing delay". It will come next month with arrears. Rent and food will not wait.'],c:[
+  {t:'Borrow ₦20,000 from a friend',s:'Repay next month',f:()=>{S.bank+=20000;S.debt+=20000;rep('friend',-1);bills(0)}},
+  {t:'Manage with what you have',f:()=>bills(0)}]});
+ bills(inc);
+}
+function bills(inc){
+ const bm=CFG.billsMult||1,b=Object.fromEntries(Object.entries({Rent:S.home.rent,Electricity:5000,Data:4000,Food:15000,Transport:6000}).map(([k,v])=>[k,Math.round(v*bm)]));
+ const tot=Object.values(b).reduce((a,c)=>a+c,0),l=[];
+ const base=CFG.allowance+S.ppa.pay;
+ if(inc){S.bank+=inc;l.push(`🔔 Allawee alert: <b>${fmt(inc)}</b> credited (NYSC ${fmt(CFG.allowance)}${S.ppa.pay?`, PPA ${fmt(S.ppa.pay)}`:''}${inc>base?', plus arrears':''}).`)}
+ if(S.shop){if(chance(.1))l.push('Shop loss: stock spoiled and a customer ran off without paying.');else{const pr=Math.max(0,Math.round(((5000+S.sk.business*1500)*S.shop+Math.random()*6000-3000)/100)*100);S.bank+=pr;S.hustleEarn+=pr;l.push(`Shop profit: ${fmt(pr)}.`)}}
+ if(S.debt&&inc){const d=S.debt;if(pay(d)){S.debt=0;rep('friend',1);l.push(`Friend repaid: ${fmt(d)}.`)}else{rep('friend',-1);l.push('You could not repay your friend in full yet.')}}
+ l.push(Object.entries(b).map(([k,v])=>`${k}: ${fmt(v)}`).join(', '));
+ if(!pay(tot)){const bal=total();S.cash=0;S.bank=0;l.push('You could not cover every bill. The landlord is angry and food was thin.');hp(-12);rep('friend',-1);if(bal<tot-10000)rep('ppa',-1)}
+ else l.push(`Bills paid. Balance: ${fmt(total())}`);
+ if(S.betNet<=-15000)l.push('Your betting losses are hurting your budget.');
+ S.hp=clamp(S.hp+8,0,100);S.en=clamp(S.en+30,0,100);S.day+=7;
+ const after=()=>{if(S.week>=36)return passingOut();S.week++;S.month=Math.ceil(S.week/4);chapterFor();if(S.week===33)return res(['The final month begins. Clearance papers and farewell plans fill your mind.'],weekStart,'ppa','Start final month');weekStart()};
+ const flex=()=>view({a:'pay',t:'Allawee day: what now?',x:[`Balance: ${fmt(total())}`],c:[
+  {t:'Treat yourself to a nice outing',s:'₦10,000. Health, energy and style up',d:total()<10000,f:()=>{pay(10000);hp(10);en(20);S.style++;rep('friend',1);after()}},
+  {t:'Send ₦10,000 home to family',s:'Friendship up',d:total()<10000,f:()=>{pay(10000);rep('friend',2);after()}},
+  {t:'Save it and carry on',p:1,f:after}]});
+ res([`Month ${S.month} ends (week ${S.week} of 36).`,...l],inc>0?flex:after,'pay');
+}
+
+/* ============ PASSING OUT ============ */
+function passingOut(){
+ S.ch='Chapter 10: Passing Out';
+ const cleared=S.attend>=22&&S.cds>=14&&S.rep.ppa>=-2;
+ view({a:'ceremony',t:'Passing out parade',x:['Clearance day. The NYSC official reviews your file.',cleared?['Official','Attendance and CDS verified. Congratulations, corper!']:['Official','Your attendance or CDS record is incomplete. This will take longer than you hoped.']],c:[{t:'Continue',p:1,f:()=>ending(cleared)}]});
+}
+function ending(cleared){
+ let key,name,txt;
+ if(!cleared){name='Extra PALAVA';txt='Missing signatures, a lost file and a very long queue lead to a few extra weeks of waiting for your certificate. You laugh, you cry, you learn that the real service was patience.'}
+ else{
+  const c=[
+   [S.sk.business>=6&&S.hustleEarn>=350000?S.hustleEarn/350000:0,'Entrepreneur','Your side hustles grew into a real business. You hand over your last NYSC allowance as seed capital for a bigger idea.'],
+   [S.rep.prof>=60?S.rep.prof/60:0,'Career Opportunity','Your PPA offers you a full-time job. Your supervisor says you are the best corper they have had in years.'],
+   [S.romance>=20?S.romance/20:0,'Relationship Ending','You and Dami make plans for the future. The year in Oyo/Osun gave you more than a certificate.'],
+   [S.rep.comm>=55&&S.cds>=20?S.rep.comm/55:0,'Community Leader','Your community project is still running. Locals call you "our corper" and a street is named after your project.'],
+   [S.explored>=14&&S.culture>=14?S.explored/14:0,'Adventure Ending','You leave with a camera roll full of festivals, groves, markets and a thousand stories.']
+  ].sort((a,b)=>b[0]-a[0]);
+  if(c[0][0]>0){name=c[0][1];txt=c[0][2]}
+  else{name='Successful Corps Member';txt='You report, you serve, you clear. A steady, honest service year. Certificate in hand, you step into the next chapter with confidence.'}
+ }
+ S.phase='end';S.endingName=name;S.endingTxt=txt;save(true);endingScreen();
+}
+function endingScreen(){
+ const name=S.endingName,txt=S.endingTxt||'',extra=name==='Extra PALAVA';
+ view({a:'ceremony',t:'Ending: '+name,x:[txt,`Final stats: ${fmt(total())} saved, PALAVA events survived: ${S.palava}, CDS meetings: ${S.cds}, places explored: ${S.explored}.${S.bets?` Betting net: ${S.betNet<0?'-':''}${fmt(Math.abs(S.betNet))}.${S.betNet<=-30000?' Those betting losses were a hard lesson.':''}`:''}`,`Reputation: Camp ${S.rep.camp}, PPA ${S.rep.ppa}, Community ${S.rep.comm}, Friendship ${S.rep.friend}, Professional ${S.rep.prof}`,"<b>Serve Your Fatherland. Survive the PALAVA. You did it.</b>"],c:[extra?{t:'Serve the 3-week extension',s:'Get your certificate cleared',p:1,f:extension}:{t:'🎓 View my certificate',p:1,f:showCert},{t:'Play again',f:()=>{CERT=null;title()}}]});
+}
+async function extension(){
+ S.endingName='Extra PALAVA (Extended)';S.day+=21;await save(true);
+ res(['Three extra weeks at the PPA. Every form is signed, every stamp is dry and the officer finally smiles.','Your certificate has been cleared.'],showCert,'ceremony','Collect my certificate');
+}
+
+/* ============ PALAVA EVENTS ============ */
+const EV=[
+ {id:'nepa',c:['life'],t:'NEPA takes light',x:'In the middle of an important task, the whole street goes dark. Your laptop shows 9%.',o:[
+  {t:'Use phone hotspot and power bank',s:'Tech check',f:()=>ok('tech',.4)?['You squeeze out 20 minutes of battery and finish. Neat.',()=>{rep('prof',1);sk('tech',1)}]:['Everything dies at 2%. You explain tomorrow.',()=>rep('prof',-1)]},
+  {t:'Pay for a cyber café with generator',s:'₦1,500',cost:1500,f:()=>['The café hums. You finish on time.',()=>{pay(1500);rep('prof',1)}]},
+  {t:'Delay and explain honestly',f:()=>['Your supervisor sighs: "NEPA again." Fair, but it dents your name.',()=>rep('prof',-1)]}]},
+ {id:'rain',c:['travel','life'],t:'Heavy rain starts',x:'The sky turns black. Within minutes the road is flooded and everyone is running for cover.',o:[
+  {t:'Wait under a shed',s:'Lose an hour',f:()=>['You make small talk with a trader. The rain passes.',()=>{tick(60);en(5)}]},
+  {t:'Run to the destination',f:()=>['You arrive soaked and sneezing.',()=>{hp(-10);en(-8)}]},
+  {t:'Book an emergency ride',s:'₦3,000',cost:3000,f:()=>['The driver charges surge pricing but you stay dry.',()=>pay(3000)]}]},
+ {id:'wrongbus',c:['travel','life'],t:'Wrong bus',x:'You realise that the bus is going to a completely different part of town.',o:[
+  {t:'Alight and rebook',s:'₦700',cost:700,f:()=>['Lost time and money, but back on track.',()=>{pay(700);tick(40)}]},
+  {t:'Ask the conductor politely',s:'Comm check',f:()=>ok('comm',.5)?['He lets you off near a connecting bus for free.',()=>tick(20)]:['He laughs and charges you full fare.',()=>{pay(Math.min(700,total()));tick(50)}]},
+  {t:'Ride on and walk back',f:()=>['A long walk, but you meet a friendly fruit seller.',()=>{tick(80);en(-12)}]}]},
+ {id:'fare',c:['travel'],t:'Driver changes the fare',x:'The driver halts midway and demands extra. "Na fuel price dey talk, oga! Add ₦1,000."',o:[
+  {t:'Argue calmly',s:'Comm check',f:()=>ok('comm',.45)?['The driver backs down, muttering.',()=>rep('friend',0)]:['The argument drags and you pay extra anyway.',()=>pay(Math.min(1000,total()))]},
+  {t:'Pay it',s:'₦1,000',cost:1000,f:()=>['Peace costs money.',()=>pay(1000)]},
+  {t:'Alight and take a bike',f:()=>['It is bumpy but cheaper.',()=>{pay(Math.min(500,total()));hp(-3)}]}]},
+ {id:'battery',c:['travel','life','camp'],t:'Phone battery dies',x:'The screen goes black. Your map, bank app and contacts are inside it.',o:[
+  {t:'Use your power bank',s:()=>S.f.pb?'You packed it ✅':'You did not pack one',d:()=>!S.f.pb,f:()=>['Saved! Smart packing pays off.',()=>rep('prof',0)]},
+  {t:'Borrow a charger from a vendor',s:'₦200',cost:200,f:()=>['A kind vendor lets you charge for a small fee.',()=>pay(200)]},
+  {t:'Go without it',f:()=>['You get lost for a while but a stranger helps.',()=>{tick(40);en(-6)}]}]},
+ {id:'sup',c:['life'],t:'Supervisor calls unexpectedly',x:'Your phone rings. "Supervisor" is on the screen. You are in the middle of a gist.',o:[
+  {t:'Answer professionally',s:'Comm check',f:()=>ok('comm',.5)?['You sound calm and capable. He gives you an extra task.',()=>rep('prof',2)]:['You fumble your words.',()=>rep('prof',-1)]},
+  {t:'Ignore and call back later',f:()=>['You call back thirty minutes later. He is not amused.',()=>rep('ppa',-1)]}]},
+ {id:'rent',c:['life'],t:'Landlord comes for rent',x:'There is a loud knock. The landlord stands outside smiling in a suspicious way.',o:[
+  {t:'Pay now',s:()=>fmt(S.home?S.home.rent:10000),f:()=>['Landlord is delighted.',()=>{pay(Math.min(S.home?S.home.rent:10000,total()));rep('friend',1)}]},
+  {t:'Negotiate extension',s:'Comm check',f:()=>ok('comm',.5)?['He agrees and says you are a "responsible corper".',()=>rep('friend',1)]:['He agrees to wait but he is not smiling.',()=>rep('friend',-1)]},
+  {t:'Pretend not to be home',f:()=>['He knocks louder. Your neighbour calls out, "He is inside!"',()=>rep('friend',-2)]}]},
+ {id:'water',c:['life'],t:'No water',x:'You turn on the tap. A dry, sad cough comes out.',o:[
+  {t:'Buy from a water vendor',s:'₦1,500',cost:1500,f:()=>['Four jerrycans delivered. You smile.',()=>pay(1500)]},
+  {t:'Fetch from the borehole yourself',s:'Fitness check',f:()=>ok('fitness',.45)?['Heavy, but you do it. You feel strong.',()=>{en(-12);sk('fitness',1)}]:['You spill half and ache all night.',()=>{en(-18);hp(-4)}]},
+  {t:'Ask a neighbour',f:()=>['She shares water and gist.',()=>{rep('friend',1)}]}]},
+ {id:'okada',c:['travel','life'],t:'Motorcycle breaks down',x:'Your okada engine coughs, splutters and dies in the middle of nowhere.',o:[
+  {t:'Help push to a mechanic',f:()=>['Sweaty, but the mechanic fixes it quickly.',()=>{en(-10);tick(30)}]},
+  {t:'Walk and flag another bike',f:()=>['Three bikes ignore you. The fourth takes you.',()=>{tick(40);pay(Math.min(500,total()))}]}]},
+ {id:'friend',c:['life','camp'],t:'Friend asks for urgent help',x:'A friend calls: "Abeg, I need ₦5,000 urgently. I will pay back."',o:[
+  {t:'Lend ₦5,000',cost:5000,f:()=>chance(.6)?['She pays back within the week and brings snacks.',()=>{pay(5000);earn(5000);rep('friend',2)}]:['The money never returns. But she owes you big time.',()=>{pay(5000);rep('friend',1)}]},
+  {t:'Help with time instead',f:()=>['You spend an evening helping. Friendship grows.',()=>{rep('friend',2);en(-8)}]},
+  {t:'Decline politely',f:()=>['She understands, but there is a cold space between you.',()=>rep('friend',-1)]}]},
+ {id:'gen',c:['life'],t:'Generator runs out of fuel',x:'Midnight. The generator sputters and dies. The whole compound is dark.',o:[
+  {t:'Queue at the filling station',s:'₦2,500',cost:2500,f:()=>['A long line, but the lights come back.',()=>{pay(2500);tick(60);en(-8)}]},
+  {t:'Go dark and sleep',f:()=>['It is hot and the mosquitoes feast.',()=>{hp(-5);en(-5)}]},
+  {t:'Borrow fuel from a neighbour',f:()=>['He gives you a half bottle and a long story.',()=>rep('friend',1)]}]},
+ {id:'invite',c:['life'],t:'Unexpected invitation',x:'A colleague invites you to a naming ceremony. There will be jollof, music and aunties dancing.',o:[
+  {t:'Attend with a gift',s:'₦3,000',cost:3000,f:()=>['The aunties adore you. Food and dancing for hours.',()=>{pay(3000);rep('friend',2);S.culture++;en(-6)}]},
+  {t:'Decline politely',f:()=>['You stay home and cook rice.',()=>en(10)]}]},
+ {id:'urgent',c:['life'],t:'Urgent work from PPA',x:'It is 5:30 PM. Your supervisor drops a task: "I need this by morning."',o:[
+  {t:'Stay late',f:()=>['You deliver. The boss notices.',()=>{en(-15);rep('prof',2);rep('ppa',1)}]},
+  {t:'Delegate part of it',s:'Leadership check',f:()=>ok('lead',.45)?['Task shared, deadline met.',()=>rep('prof',1)]:['Delegation goes poorly.',()=>rep('prof',-1)]},
+  {t:'Say you have CDS tomorrow',f:()=>['The supervisor is unconvinced.',()=>rep('ppa',-1)]}]},
+ {id:'lostdoc',c:['life','camp'],t:'Important document lost',x:'You reach into your bag. Your clearance form is gone.',o:[
+  {t:'Search home and bag again',f:()=>chance(.5)?['Found in a jacket pocket!',()=>0]:['Not there. You lose half a day.',()=>{tick(120);en(-8)}]},
+  {t:'Get a replacement at the NYSC office',s:'₦1,500',cost:1500,f:()=>['Queues and stamps, but it is done.',()=>{pay(1500);tick(90)}]},
+  {t:'Use a photo you took earlier',s:'Tech check',f:()=>ok('tech',.5)?['The scan is accepted.',()=>sk('tech',1)]:['They want the original.',()=>{tick(60);rep('prof',-1)}]}]},
+ {id:'seller',c:['life','camp'],t:'Seller refuses to reduce price',x:'A trader insists on the full price: "No be me set price, na market set am."',o:[
+  {t:'Walk away slowly',s:'Business check',f:()=>ok('business',.4)?['She calls you back with a discount!',()=>sk('business',1)]:['She lets you go. You pay more at the next shop.',()=>pay(Math.min(500,total()))]},
+  {t:'Pay full price',s:'₦2,000',cost:2000,f:()=>['Fair enough. You are tired.',()=>pay(2000)]}]},
+ {id:'scam',c:['life'],t:'Fake allawee SMS',x:'A text arrives: "NYSC ALLAWEE VERIFICATION: send your bank PIN and OTP to receive your payment." It looks official.',o:[
+  {t:'Ignore and delete it',f:()=>['Smart. No genuine bank or NYSC office asks for your PIN or OTP.',()=>sk('tech',1)]},
+  {t:'Report it to your bank',f:()=>['The bank thanks you and blocks the number.',()=>rep('friend',1)]},
+  {t:'Send the details',f:()=>['Your account is drained. A painful lesson.',()=>{pay(Math.min(total(),15000));hp(-5)}]}]},
+ {id:'banker',c:['life'],t:'The "sure banker" tip',x:'A colleague whispers: "This game na banker. Put ₦5,000 and you go double am!"',o:[
+  {t:'Bet ₦5,000',s:'Risky',cost:5000,f:()=>chance(.3)?['It entered! You win ₦11,000, but you know it was luck.',()=>{pay(5000);earn(11000,false);S.betNet+=6000;S.bets++}]:['The "banker" crashes in the 89th minute.',()=>{pay(5000);S.betNet-=5000;S.bets++}]},
+  {t:'Laugh and decline',f:()=>['"Banker" is just another word for "maybe".',()=>rep('friend',0)]}]},
+ {id:'pos',c:['life','travel'],t:'POS network failure',x:'The POS agent says "network don dey fall." You need cash urgently.',o:[
+  {t:'Try another agent',f:()=>['After two failed attempts the third works.',()=>{tick(30);en(-5)}]},
+  {t:'Use cash if you have it',d:()=>S.cash<2000,s:'Needs ₦2,000 cash',f:()=>['Cash is king.',()=>{S.cash-=2000}]}]},
+ {id:'traffic',c:['travel','life'],t:'Stuck in traffic',x:'A broken-down truck blocks the road. Honking, shouting, vendors weaving between cars.',o:[
+  {t:'Wait it out',f:()=>['You buy groundnuts and pure water. The wait is long.',()=>{tick(60);pay(Math.min(200,total()))}]},
+  {t:'Find a shortcut',s:'Driving check',f:()=>ok('driving',.45)?['A narrow road saves you 30 minutes.',()=>sk('driving',1)]:['The shortcut is flooded. You lose more time.',()=>tick(50)]},
+  {t:'Get down and trek',f:()=>['Good exercise, exhausting in the heat.',()=>{en(-12);sk('fitness',1)}]}]},
+ {id:'shoes',c:['camp'],t:'Shoes damaged during parade',x:'The sole of your boot peels off mid-march. Left. Right. Flap flap flap.',o:[
+  {t:'Buy cheap canvas at Mammy Market',s:'₦3,500',cost:3500,f:()=>['New shoes, new confidence.',()=>pay(3500)]},
+  {t:'Use glue and tape',f:()=>['It holds long enough.',()=>rep('camp',0)]},
+  {t:'Borrow from roommate',f:()=>['Roommate laughs, then lends.',()=>rep('friend',2)]}]},
+ {id:'rainhostel',c:['camp'],t:'Rain in the hostel',x:'Rain pours through the roof. Mattresses are soaked, people screaming.',o:[
+  {t:'Move to the dry corner',f:()=>S.f.bed==='window'?['Your window bunk is soaked.',()=>{hp(-5);en(-8)}]:['You slide into the dry corner.',()=>0]},
+  {t:'Stay up and help others',f:()=>['You help mop and save bags. People notice.',()=>{rep('friend',2);rep('camp',1);en(-10)}]}]}
+];
+function palava(ctx,next){
+ const okE=e=>e.c.includes(ctx)&&(e.id!=='banker'||CFG.bettingEnabled);const pool=EV.filter(e=>okE(e)&&!S.seen.slice(-6).includes(e.id));
+ const e=rnd(pool.length?pool:EV.filter(okE));
+ S.seen.push(e.id);S.palava++;
+ view({a:ctx==='camp'?'hostel':ctx==='travel'?'road':'city',t:'PALAVA! '+e.t,x:[e.x],c:e.o.map(o=>({t:o.t,s:typeof o.s==='function'?o.s():o.s,d:(typeof o.d==='function'?o.d():o.d)||(o.cost&&total()<o.cost),f:()=>{const r=o.f();snd(260);r[1]&&r[1]();res([r[0]],next,ctx==='camp'?'hostel':ctx==='travel'?'road':'city')}}))});
+}
+
+/* ============ PHONE ============ */
+function phone(tab){
+ if(!S)return;tab=tab||'chat';
+ const T=[['chat','💬 Chat'],['bank','🏦 Bank'],['map','🗺️ Map'],['me','👤 Me'],['menu','⚙️ Menu']];
+ let c='';
+ if(tab==='chat')c=(S.chat.length?S.chat.map(m=>`<div class="m"><b>${m.from}</b> (day ${m.day})<br>${m.text}</div>`).join(''):'<div class="m">No messages yet. Your phone buzzes only when something PALAVA happens.</div>');
+ if(tab==='bank')c=`<div class="m"><b>Cash</b> ${fmt(S.cash)}<br><b>Bank</b> ${fmt(S.bank)}<br><b>Allawee:</b> ${fmt(CFG.allowance+(S.ppa?S.ppa.pay:0))}/month${S.arrears?'<br><b>Owed to you (arrears):</b> '+fmt(S.arrears):''}${S.debt?'<br><b>You owe a friend:</b> '+fmt(S.debt):''}${S.shop?'<br><b>Shop level:</b> '+S.shop:''}</div><button class="btn" onclick="atm(5000)">Withdraw ₦5,000</button><button class="btn" onclick="atm(-5000)">Deposit ₦5,000</button>`;
+ if(tab==='map')c=`<div class="m"><b>You are in:</b> ${S.ppa?S.ppa.city+', '+S.ppa.st+' State':'Camp / en route'}<br><b>Phase:</b> ${S.ch}</div>${S.ppa?'<div class="m">Use "Explore" in the monthly menu to visit local landmarks. Fast travel unlocks in the full game.</div>':''}`;
+ if(tab==='me')c=`<div class="m"><b>${S.name}</b>, ${S.course}, ${S.pers}</div><div class="m"><div class="kv">${Object.entries(S.sk).map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('')}</div></div><div class="m"><div class="kv">${Object.entries(S.rep).map(([k,v])=>`<span>${k} rep</span><b>${v}</b>`).join('')}</div></div><div class="m"><div class="kv"><span>style</span><b>${S.style}</b><span>betting net</span><b>${S.betNet<0?'-':''}${fmt(Math.abs(S.betNet))}</b></div></div>`;
+ if(tab==='menu')c=`<button class="btn" onclick="closePh();saveNow()">💾 Save game now</button><button class="btn" onclick="saveNow(true)">Save and quit to title</button><div class="m">${ME?'Signed in as <b>'+E(ME.username)+'</b>. Your game also auto-saves every action.':'Playing as guest: saves stay on this device. Sign in from the title screen to save to your account.'}</div>`;
+ $('#ph').innerHTML=`<div class="ph" onclick="if(event.target===this)closePh()"><div><div class="tabs">${T.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="phone('${t[0]}')">${t[1]}</button>`).join('')}</div>${c}<button class="btn" onclick="closePh()">Close</button></div></div>`;
+}
+function closePh(){$('#ph').innerHTML=''}
+function atm(n){if(n>0){if(S.bank>=n){S.bank-=n;S.cash+=n}else toast('Insufficient bank balance',1)}else{if(S.cash>=-n){S.cash+=n;S.bank-=n}else toast('Not enough cash',1)}phone('bank');$('#hud').innerHTML=hudHtml()}
+
+title();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script><script src="/online.js"></script>
+</body>
+</html>
