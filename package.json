@@ -1,0 +1,16 @@
+{
+  "name": "palava-nysc-adventure",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PALAVA — a browser-playable NYSC life adventure game",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
