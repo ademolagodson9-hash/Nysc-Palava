@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Delete PALAVA Account</title><meta name="robots" content="index,follow"><style>body{font:16px/1.6 system-ui,sans-serif;max-width:620px;margin:0 auto;padding:24px;color:#203127}h1{color:#094a29}.btn{padding:12px 16px;background:#a52828;color:white;border:0;border-radius:8px;font-size:16px;cursor:pointer}#status{margin-top:16px;padding:12px;background:#f1f4ef;border-radius:8px}</style></head>
+<body><p><a href="/">← Back to PALAVA</a></p><h1>Delete your PALAVA account</h1><p>This action permanently removes your account and associated in-game data from the active PALAVA service. It cannot be undone.</p><p>You must be signed in to the account you want to delete. If you are not signed in, return to the game and sign in first.</p><button id="delete" class="btn">Delete my account and game data</button><div id="status" role="status">No action taken.</div>
+<script>
+document.getElementById('delete').addEventListener('click',async function(){
+ if(!confirm('Delete your PALAVA account and associated game data? This cannot be undone.'))return;
+ const b=this;b.disabled=true;const status=document.getElementById('status');status.textContent='Processing deletion…';
+ try{const r=await fetch('/api/account',{method:'DELETE',headers:{'X-Requested-With':'palava'},credentials:'same-origin'});const j=await r.json();if(!r.ok)throw new Error(j.error||'Deletion failed');status.textContent='Your account has been deleted. You can return to the PALAVA home page.';b.textContent='Account deleted';}
+ catch(e){status.textContent=e.message+' If needed, sign in to the correct account and try again.';b.disabled=false;}
+});
+</script></body></html>
