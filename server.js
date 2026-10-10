@@ -74,13 +74,22 @@ app.post('/api/cheers/claim',(req,res)=>{const u=currentUser(req);if(!u)return e
 app.post('/api/transfer/claim',(req,res)=>{const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');const items=u.inbox.splice(0);res.json({total:items.reduce((a,x)=>a+x.amount,0),items});});
 app.get('/api/certificate',(req,res)=>{
   const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');
-  if(!u.cert){u.cert='PALAVA-'+crypto.randomBytes(5).toString('hex').toUpperCase();certs.set(u.cert,u.username);}
+  if(!u.cert){u.cert='PALAVA-'+crypto.randomBytes(5).toString('hex').toUpperCase();u.certIssued=Date.now();}
+  const s=u.summary||{};
+  const cert={serial:u.cert,username:u.username,name:s.name||u.displayName,course:s.course||'Not recorded',ppa:s.ppa||'Not recorded',city:s.city||'Not recorded',state:s.state||'Not recorded',ending:s.ending||'PALAVA Graduate',score:Number(s.score)||0,grade:s.grade||'Game completion',issued:u.certIssued||Date.now()};
+  certs.set(u.cert,cert);
   res.json({cert:u.cert});
 });
+app.get('/api/verify/:serial',(req,res)=>{
+  const cert=certs.get(req.params.serial);
+  if(!cert)return res.status(404).json({valid:false,error:'Certificate not found'});
+  res.json({valid:true,cert});
+});
 app.get('/verify/:serial',(req,res)=>{
-  const username=certs.get(req.params.serial);
-  if(!username)return res.status(404).send('Certificate not found. PALAVA certificates are game souvenirs, not official NYSC documents.');
-  res.type('html').send('<main style="font:16px system-ui;max-width:600px;margin:4rem auto;padding:1rem"><h1>PALAVA Game Certificate</h1><p>Serial: '+req.params.serial.replace(/[&<>"]/g,'')+'</p><p>Player: '+username.replace(/[&<>"]/g,'')+'</p><p>This is a game souvenir, not an official NYSC document.</p></main>');
+  const cert=certs.get(req.params.serial);
+  if(!cert)return res.status(404).send('Certificate not found. PALAVA certificates are game souvenirs, not official NYSC documents.');
+  const safe=x=>String(x||'').replace(/[&<>"]/g,'');
+  res.type('html').send('<main style="font:16px system-ui;max-width:600px;margin:4rem auto;padding:1rem"><h1>PALAVA Game Certificate</h1><p>Serial: '+safe(cert.serial)+'</p><p>Player: '+safe(cert.username)+'</p><p>Course: '+safe(cert.course)+'</p><p>PPA: '+safe(cert.ppa)+', '+safe(cert.city)+', '+safe(cert.state)+'</p><p>This is a game souvenir, not an official NYSC document.</p></main>');
 });
 app.get('/api/online/players',(_req,res)=>res.json({count:sessions.size,players:[...users.values()].map(u=>({username:u.username,displayName:u.displayName}))}));
 app.get('/api/chat',(req,res)=>res.json({messages:chat.slice(-100)}));
