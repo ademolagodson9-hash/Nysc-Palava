@@ -11,6 +11,10 @@ PALAVA is a free, browser-playable Nigerian NYSC life-adventure game inspired by
 - **Install on iPhone/iPad:** open the game in Safari, tap **Share**, then **Add to Home Screen**.
 - The web app shell can open offline after the game has been loaded once. Account, chat and other server features still need an internet connection.
 - **Source code:** https://github.com/ademolagodson9-hash/Nysc-Palava
+- **Privacy policy:** https://palava-nysc-adventure.onrender.com/privacy-policy.html
+- **Account deletion:** https://palava-nysc-adventure.onrender.com/account-deletion.html
+- **Terms:** https://palava-nysc-adventure.onrender.com/terms.html
+- **Android build pipeline:** GitHub Actions can build a test APK and, once signing secrets are configured, a signed Play Store bundle. See `PLAY_STORE_LISTING.md`.
 
 ## Current gameplay
 
