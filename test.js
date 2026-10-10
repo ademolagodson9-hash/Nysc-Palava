@@ -7,8 +7,8 @@ async function main() {
   const html = fs.readFileSync('index.html', 'utf8');
   const manifest = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
   const onlineJs = fs.readFileSync('online.js', 'utf8');
-  for (const match of html.matchAll(/<script([^>]*)>([\\s\\S]*?)<\\/script>/gi)) {
-    if (!/application\\/ld\\+json/i.test(match[1]) && match[2].trim()) new vm.Script(match[2], { filename: 'index.html inline script' });
+  for (const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    if (!/application\/ld\+json/i.test(match[1]) && match[2].trim()) new vm.Script(match[2], { filename: 'index.html inline script' });
   }
   new vm.Script(onlineJs, { filename: 'online.js' });
   new vm.Script(fs.readFileSync('server.js', 'utf8'), { filename: 'server.js' });
