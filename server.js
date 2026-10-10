@@ -14,6 +14,7 @@ const users = new Map();
 const sessions = new Map();
 const chat = [];
 const transfers = [];
+const walletLedger = [];
 const certs = new Map();
 const adminPassword = process.env.ADMIN_PASSWORD || '';
 const hashPassword = (password, salt=crypto.randomBytes(16).toString('hex')) => ({
@@ -30,7 +31,7 @@ function currentUser(req) {
   const username=sessions.get(sid);
   return username ? users.get(username) : null;
 }
-function publicUser(u) { return {username:u.username,displayName:u.displayName,cheers:u.cheers||0,inbox:(u.inbox||[]).length}; }
+function publicUser(u) { return {username:u.username,displayName:u.displayName,cheers:u.cheers||0,inbox:(u.inbox||[]).length,wallet:Number(u.wallet)||0}; }
 function issueSession(res,u) {
   const sid=crypto.randomBytes(32).toString('hex');
   sessions.set(sid,u.username);
@@ -47,7 +48,7 @@ app.post('/api/auth/register',(req,res)=>{
   if(password.length<8) return err(res,400,'Use a password with at least 8 characters.');
   if(users.has(username)) return err(res,409,'That username is already taken.');
   const p=hashPassword(password);
-  const u={username,displayName,password:p,save:null,summary:{},createdAt:Date.now(),cheers:0,inbox:[],cert:null};
+  const u={username,displayName,password:p,save:null,summary:{},createdAt:Date.now(),cheers:0,inbox:[],wallet:5000,cert:null};
   users.set(username,u); issueSession(res,u);
   res.json({ok:true,user:publicUser(u)});
 });
@@ -72,6 +73,27 @@ app.put('/api/save',(req,res)=>{
 });
 app.post('/api/cheers/claim',(req,res)=>{const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');const n=u.cheers||0;u.cheers=0;res.json({cheers:n});});
 app.post('/api/transfer/claim',(req,res)=>{const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');const items=u.inbox.splice(0);res.json({total:items.reduce((a,x)=>a+x.amount,0),items});});
+
+app.get('/api/wallet',(req,res)=>{
+  const u=currentUser(req);if(!u)return err(res,401,'Sign in to use your PALAVA wallet.');
+  res.json({balance:Number(u.wallet)||0,transactions:walletLedger.filter(t=>t.from===u.username||t.to===u.username).slice(-30).reverse()});
+});
+app.post('/api/wallet/transfer',(req,res)=>{
+  const u=currentUser(req);if(!u)return err(res,401,'Sign in to transfer PALAVA game money.');
+  const recipientName=String(req.body?.recipient||'').trim().toLowerCase();
+  const amount=Number(req.body?.amount);
+  if(!/^[a-z0-9_]{3,20}$/.test(recipientName))return err(res,400,'Enter a valid recipient username.');
+  if(recipientName===u.username)return err(res,400,'You cannot transfer money to yourself.');
+  if(!Number.isSafeInteger(amount)||amount<1||amount>100000)return err(res,400,'Transfer must be between ₦1 and ₦100,000.');
+  const recipient=users.get(recipientName);if(!recipient)return err(res,404,'That PALAVA player was not found.');
+  u.wallet=Number(u.wallet)||0;recipient.wallet=Number(recipient.wallet)||0;
+  if(u.wallet<amount)return err(res,400,'Insufficient PALAVA wallet balance.');
+  u.wallet-=amount;recipient.wallet+=amount;
+  const tx={id:crypto.randomUUID(),from:u.username,to:recipient.username,amount,t:Date.now(),type:'player-transfer'};
+  walletLedger.push(tx);if(walletLedger.length>2000)walletLedger.shift();
+  res.json({ok:true,balance:u.wallet,transaction:tx,message:'PALAVA game money transferred successfully.'});
+});
+
 app.get('/api/certificate',(req,res)=>{
   const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');
   if(!u.cert){u.cert='PALAVA-'+crypto.randomBytes(5).toString('hex').toUpperCase();u.certIssued=Date.now();}
