@@ -38,6 +38,11 @@ jobs:
         run: npm test
       - name: Generate Android project
         run: npx cap add android
+      - name: Set Google Play target API level
+        run: |
+          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 36/' android/variables.gradle
+          sed -i 's/targetSdkVersion = 35/targetSdkVersion = 36/' android/variables.gradle
+          grep -E 'compileSdkVersion|targetSdkVersion' android/variables.gradle
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build test APK
