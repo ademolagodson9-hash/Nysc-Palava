@@ -1,4 +1,4 @@
-const CACHE='palava-shell-v3';
+const CACHE='palava-shell-v4';
 const ASSETS=['/','/index.html','/online.js','/manifest.webmanifest','/icons/palava-192.svg','/icons/palava-512.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).catch(()=>{})));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))));
