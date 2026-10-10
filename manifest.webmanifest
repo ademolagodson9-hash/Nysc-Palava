@@ -1,0 +1,10 @@
+{
+  "name": "PALAVA — NYSC Adventure",
+  "short_name": "PALAVA",
+  "description": "Serve your fatherland. Survive the PALAVA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1a12",
+  "theme_color": "#094a29",
+  "icons": []
+}
