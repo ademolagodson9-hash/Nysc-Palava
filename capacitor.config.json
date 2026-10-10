@@ -1,7 +1,7 @@
 {
   "appId": "com.godson.palava.nyscadventure",
   "appName": "PALAVA NYSC Adventure",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
     "url": "https://palava-nysc-adventure.onrender.com",
     "cleartext": false,
