@@ -3,9 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>PALAVA</title>
-<meta name="description" content="Serve Your Fatherland. Survive the PALAVA. A Nigerian NYSC life-sim you can play in your browser.">
-<meta property="og:title" content="PALAVA"><meta property="og:description" content="Serve Your Fatherland. Survive the PALAVA.">
+<title>PALAVA — NYSC Adventure Game | Oyo & Osun</title>
+<meta name="description" content="Play PALAVA, a free Nigerian NYSC life adventure game set in Oyo and Osun. Experience orientation camp, PPA postings, CDS, allawee, rent, side hustles and your service year.">
+<meta name="keywords" content="PALAVA game, NYSC game, NYSC adventure game Nigeria, corper game, PPA posting game, Oyo, Osun, Nigerian life simulator">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://palava-nysc-adventure.onrender.com/">
+<meta property="og:type" content="website"><meta property="og:url" content="https://palava-nysc-adventure.onrender.com/"><meta property="og:title" content="PALAVA — NYSC Adventure Game"><meta property="og:description" content="Serve Your Fatherland. Survive the PALAVA. Play a Nigerian NYSC life adventure in Oyo and Osun.">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="PALAVA — NYSC Adventure Game"><meta name="twitter:description" content="A free Nigerian NYSC life adventure game set in Oyo and Osun.">
 <meta name="theme-color" content="#094a29"><link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
 <style>
@@ -284,6 +288,7 @@ function title(){S=null;ONT=true;$('#hud').innerHTML='';
   {t:'Continue',s:ME?'Resume your cloud save':'Resume your saved game',f:load}];
  if(ME)CH.push({t:'Online hub',s:'Friends, chat, leaderboard',f:()=>window.hub&&hub()});
  else CH.push({t:'Sign in or create account',s:'Pick a username and play with friends',f:()=>window.authScreen?authScreen():toast('Online features are unavailable offline',1)});
+ CH.push({t:'📲 Install / download PALAVA',s:'Add the game to your phone or computer',f:()=>window.installPALAVA?window.installPALAVA():toast('Open this site in your browser menu and choose Install app / Add to Home Screen.')});
  CH.push({t:'Settings',f:settings},{t:'Extras',f:extras});
  $('#body').innerHTML=`<h1 class="big-t">PALAVA</h1><div class="tag">Serve Your Fatherland.<br>Survive the PALAVA.</div>${CFG.onlinePlayers>0?`<p id="livePlayers" style="text-align:center;font-size:.9rem;opacity:.9">🟢 ${CFG.onlinePlayers} player${CFG.onlinePlayers===1?'':'s'} online</p>`:''}${ME?`<p style="text-align:center">Signed in as <b>${E(ME.username)}</b></p>`:''}${CFG.motd?`<p style="text-align:center">${E(CFG.motd)}</p>`:''}${CFG.maintenance?'<p style="text-align:center;color:#C0392B"><b>Maintenance mode is on.</b></p>':''}${ann}`+CH.map((q,i)=>`<button class="btn ${q.p?'pri':''}" onclick="pick(${i})"><b>${q.t}</b>${q.s?`<small>${q.s}</small>`:''}</button>`).join('');
 }
@@ -483,9 +488,21 @@ function passOutCamp(){
 }
 
 /* ============ POSTING ============ */
-const CITIES={Oyo:['Ibadan','Ogbomoso','Oyo Town'],Osun:['Osogbo','Ile-Ife','Ilesa','Iwo']};
-const POOLS={Architecture:['arch','eng','office'],'Computer Science':['ict','school','office'],Education:['school','school','ngo'],'Mass Communication':['media','ngo','office'],Nursing:['hospital','school','ngo'],Agriculture:['agro','ngo','school'],Accounting:['office','biz','school'],Engineering:['eng','eng','office']};
-const PPAN={school:['Greenfield Comprehensive High School','Unity Model College','Hillcrest Primary School'],arch:['Arc Studio Nigeria Ltd'],office:['Local Government Secretariat','State Ministry Office'],hospital:['Heritage Specialist Clinic'],ict:['BrightByte ICT Solutions'],ngo:['Hope Bridge Foundation'],media:['City Pulse Radio 98.7'],agro:['GreenAcre Farms Ltd'],eng:['Terra Build Engineering'],biz:['Prime Ledger Consulting']};
+const CITIES={Oyo:['Ibadan','Ogbomoso','Oyo Town','Saki','Iseyin'],Osun:['Osogbo','Ile-Ife','Ilesa','Iwo','Ede','Ikirun']};
+const POOLS={Architecture:['arch','eng','office'], 'Computer Science':['ict','school','office'],Education:['school','school','ngo'],'Mass Communication':['media','ngo','office'],Nursing:['hospital','school','ngo'],Agriculture:['agro','ngo','school'],Accounting:['office','biz','school'],Engineering:['eng','eng','office']};
+// Fictional game PPAs inspired by common placement types; these are not official NYSC listings.
+const PPAN={
+ school:['Greenfield Comprehensive High School','Unity Model College','Hillcrest Primary School','Oke-Ado Community Grammar School','Sunrise Nursery and Primary School','Ayetoro Community High School','Osogbo Learning Centre','Ife Heritage College','Ogbomoso Community School','Ilesa Progressive School','Bright Future Academy','Oyo Town Model School'],
+ arch:['Arc Studio Nigeria Ltd','Buildwise Design Associates','Cornerstone Architects','UrbanNest Design Studio','Godwin & Partners Design Office','Crownline Architects','PlanCraft Consult','Oyo Habitat Design Studio'],
+ office:['Local Government Secretariat','State Ministry Office','Oyo Community Development Office','Osun Public Service Annex','Ibadan North Administrative Office','Ogbomoso South Council Office','Osogbo Local Government Office','Ife Central Civic Office','Ilesa Municipal Office'],
+ hospital:['Heritage Specialist Clinic','Hopewell Community Hospital','Oke-Ogun General Clinic','Osun Family Health Centre','Ibadan Community Medical Centre','Ife Wellness Hospital','Ilesa General Health Centre','Ogbomoso Family Clinic'],
+ ict:['BrightByte ICT Solutions','CodeBridge Digital Hub','Oyo Digital Services','Osun TechWorks','Ibadan Network Support Centre','Ife Innovation Lab','PixelRoot Software Studio','Ogbomoso ICT Centre'],
+ ngo:['Hope Bridge Foundation','Green Neighbourhood Initiative','YouthRise Nigeria','Community Health Partners','Osun Education Support Network','Oyo Women and Youth Foundation','FutureBuilders Initiative','Safe Streets Community Project'],
+ media:['City Pulse Radio 98.7','Oyo Voice Media House','Osun Today Newsroom','The Civic Lens Studio','Ibadan Community Radio','Ife Creative Media Hub','Southwest Story Lab'],
+ agro:['GreenAcre Farms Ltd','HarvestGate Cooperative','Oyo Agro Support Centre','Osun Farm Extension Hub','Ibarapa Crop Research Farm','Ife GreenFields Project','Ogbomoso Produce Cooperative'],
+ eng:['Terra Build Engineering','CivicWorks Engineering Services','BlueBeam Infrastructure Ltd','Oyo Roads Maintenance Unit','Osun Waterworks Project Office','Ibadan Structural Consult','Ife Energy Services'],
+ biz:['Prime Ledger Consulting','MarketSquare Business Hub','Oyo Enterprise Support Centre','Osun Small Business Desk','Ibadan Finance and Admin Services','Ife Business Advisory','Ogbomoso Enterprise Centre']
+};
 const PPAL={school:'Secondary / Primary School',arch:'Architectural firm',office:'Government office',hospital:'Hospital',ict:'ICT company',ngo:'NGO',media:'Media company',agro:'Agricultural company',eng:'Engineering company',biz:'Private company'};
 const PPAB={school:5000,arch:20000,office:0,hospital:10000,ict:25000,ngo:5000,media:10000,agro:8000,eng:20000,biz:25000};
 function rollPPA(){const st=rnd(['Oyo','Osun']),city=rnd(CITIES[st]),type=rnd(catInfo(S.cat||catOf(S.course))[3]);S.ppa={st,city,type,name:rnd(PPAN[type]),pay:PPAB[type]};return S.ppa}
@@ -847,6 +864,15 @@ function atm(n){if(n>0){if(S.bank>=n){S.bank-=n;S.cash+=n}else toast('Insufficie
 
 title();
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script><script src="/online.js"></script>
+<script>
+let palavaInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();palavaInstallPrompt=event;});
+window.addEventListener("appinstalled",()=>{palavaInstallPrompt=null;if(typeof toast==="function")toast("PALAVA installed successfully!");});
+window.installPALAVA=async function(){
+ if(palavaInstallPrompt){palavaInstallPrompt.prompt();const choice=await palavaInstallPrompt.userChoice;palavaInstallPrompt=null;if(choice&&choice.outcome==="accepted"&&typeof toast==="function")toast("Installing PALAVA…");return;}
+ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+ alert(ios?"To install PALAVA on iPhone: tap Share in Safari, then choose Add to Home Screen.":"To install PALAVA: open your browser menu (⋮ or …) and choose Install app or Add to Home Screen. If the option is missing, open the site in Chrome or Edge and try again.");
+};
+</script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script><script src="/online.js"></script>
 </body>
 </html>
