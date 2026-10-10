@@ -98,6 +98,17 @@ app.post('/api/chat',(req,res)=>{
   const text=String(req.body?.text||'').trim().slice(0,300);if(!text)return err(res,400,'Message cannot be empty.');
   const item={id:crypto.randomUUID(),from:u.username,text,t:Date.now()};chat.push(item);if(chat.length>500)chat.shift();res.json({ok:true,message:item});
 });
+app.delete('/api/account',(req,res)=>{
+  const u=currentUser(req);
+  if(!u)return err(res,401,'Sign in before deleting your account.');
+  const username=u.username;
+  for(const [sid,name] of sessions.entries())if(name===username)sessions.delete(sid);
+  users.delete(username);
+  for(const [serial,cert] of certs.entries())if(cert.username===username)certs.delete(serial);
+  for(let i=chat.length-1;i>=0;i--)if(chat[i].from===username)chat.splice(i,1);
+  res.setHeader('Set-Cookie','palava_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'+(process.env.NODE_ENV==='production'?'; Secure':''));
+  res.json({ok:true,message:'Account and associated game data deleted from the active PALAVA service.'});
+});
 app.use(express.static(__dirname,{extensions:['html'],maxAge:'1h'}));
 app.get('*',(req,res)=>req.path.startsWith('/api/')?err(res,404,'API route not found.'):res.sendFile(path.join(__dirname,'index.html')));
 app.listen(PORT,'0.0.0.0',()=>console.log('PALAVA listening on '+PORT));
