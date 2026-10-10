@@ -876,5 +876,76 @@ window.installPALAVA=async function(){
  alert(ios?"To install PALAVA on iPhone: tap Share in Safari, then choose Add to Home Screen.":"To install PALAVA: open your browser menu (⋮ or …) and choose Install app or Add to Home Screen. If the option is missing, open the site in Chrome or Edge and try again.");
 };
 </script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script><script src="/online.js"></script>
+
+<style>
+#palava-social-launch{position:fixed;right:14px;bottom:16px;z-index:9998;border:0;border-radius:999px;background:#153c27;color:#fff;padding:13px 17px;font:700 14px system-ui;box-shadow:0 5px 22px #0004;cursor:pointer}
+#palava-social{position:fixed;inset:0;z-index:9999;background:#07130ee8;display:none;align-items:center;justify-content:center;padding:12px;font:14px system-ui;color:#14271c}
+#palava-social .ps-card{background:#f6f8f3;border-radius:20px;width:min(760px,100%);max-height:92vh;overflow:auto;padding:18px;box-shadow:0 20px 70px #0008}
+#palava-social .ps-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#palava-social .ps-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+#palava-social button,#palava-social input{font:inherit}
+#palava-social .ps-tabs button,#palava-social .ps-btn{border:0;border-radius:10px;background:#19482f;color:white;padding:10px 12px;cursor:pointer}
+#palava-social .ps-tabs button.active{background:#e4b45e;color:#1b281d}
+#palava-social .ps-pane{display:none;background:white;border:1px solid #dce5db;border-radius:14px;padding:14px}
+#palava-social .ps-pane.active{display:block}
+#palava-social input{box-sizing:border-box;width:100%;padding:11px;border:1px solid #c8d5c7;border-radius:9px;margin:5px 0 10px}
+#palava-social .ps-note{color:#526454;font-size:12px;line-height:1.5}
+#palava-social .ps-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#palava-social .ps-place{padding:14px;border-radius:12px;background:#eaf2e7;border:1px solid #c9d9c8;cursor:pointer;text-align:left;color:#163923}
+#palava-social .ps-result{padding:10px;background:#f1f6ed;border-radius:9px;margin-top:9px;white-space:pre-wrap}
+@media(max-width:520px){#palava-social .ps-map{grid-template-columns:1fr}#palava-social .ps-card{padding:12px}}
+</style>
+<button id="palava-social-launch" type="button" onclick="palavaSocialOpen()">🌍 NYSC World</button>
+<div id="palava-social" role="dialog" aria-modal="true" aria-label="PALAVA NYSC World">
+ <div class="ps-card">
+  <div class="ps-head"><div><b style="font-size:21px">PALAVA Social World</b><div class="ps-note">Explore Oyo & Osun • play quick games • meet other corpers</div></div><button class="ps-btn" onclick="palavaSocialClose()">✕ Close</button></div>
+  <div class="ps-tabs">
+   <button class="active" onclick="palavaSocialTab('map',this)">🗺️ Map</button>
+   <button onclick="palavaSocialTab('game',this)">🎮 Mini-game</button>
+   <button onclick="palavaSocialTab('people',this)">👥 Players</button>
+   <button onclick="palavaSocialTab('wallet',this)">💸 Transfer game money</button>
+  </div>
+  <section class="ps-pane active" id="ps-map">
+   <h3>Choose your next stop</h3><p>Tap a location to explore a fictional NYSC-inspired stop. This is a game map, not live GPS tracking.</p>
+   <div class="ps-map">
+    <button class="ps-place" onclick="palavaVisit('Ogbomoso, Oyo')">📍 <b>Ogbomoso, Oyo</b><br><small>Camp stories & roadside suya</small></button>
+    <button class="ps-place" onclick="palavaVisit('Ibadan, Oyo')">📍 <b>Ibadan, Oyo</b><br><small>City hustle & PPA errands</small></button>
+    <button class="ps-place" onclick="palavaVisit('Osogbo, Osun')">📍 <b>Osogbo, Osun</b><br><small>Arts, food & new friends</small></button>
+    <button class="ps-place" onclick="palavaVisit('Ile-Ife, Osun')">📍 <b>Ile-Ife, Osun</b><br><small>Culture & weekend adventure</small></button>
+   </div><div class="ps-result" id="ps-map-result">Select a stop to start exploring.</div>
+  </section>
+  <section class="ps-pane" id="ps-game">
+   <h3>Danfo Dash: Camp Run</h3><p>Tap the button as many times as you can in 10 seconds to collect PALAVA points.</p>
+   <div class="ps-result">Score: <b id="ps-score">0</b> · Time: <b id="ps-time">10</b>s</div>
+   <button class="ps-btn" id="ps-start" onclick="palavaStartMiniGame()">Start 10-second challenge</button>
+   <button class="ps-btn" id="ps-tap" onclick="palavaTapGame()" disabled>🏃 Run!</button><div class="ps-result" id="ps-game-result">Ready, corper? Let's go!</div>
+  </section>
+  <section class="ps-pane" id="ps-people">
+   <h3>Players & community</h3><p>See registered PALAVA players and send a message in the in-game phone chat.</p>
+   <button class="ps-btn" onclick="palavaLoadPlayers()">Refresh players</button><div class="ps-result" id="ps-player-result">Refresh to see players. Sign in to chat.</div>
+   <p class="ps-note">This early-access version has a shared player list and chat API; it does not yet synchronize avatars or player movement on a live 3D map.</p>
+  </section>
+  <section class="ps-pane" id="ps-wallet">
+   <h3>PALAVA Wallet</h3><div class="ps-result" id="ps-wallet-balance">Sign in to load your virtual balance.</div>
+   <label for="ps-recipient">Recipient username</label><input id="ps-recipient" maxlength="20" placeholder="e.g. fellowcorper">
+   <label for="ps-amount">Amount (PALAVA game money, ₦)</label><input id="ps-amount" type="number" min="1" max="100000" step="1" placeholder="1000">
+   <button class="ps-btn" onclick="palavaSendMoney()">Transfer game money</button><div class="ps-result" id="ps-wallet-result">Transfers are virtual in-game currency only, not real bank transfers or real naira.</div>
+   <p class="ps-note">The current prototype keeps balances in temporary server memory; balances and transfers may reset if the server restarts. Do not use this as a real-money wallet.</p>
+  </section>
+ </div>
+</div>
+<script>
+function palavaSocialOpen(){document.getElementById('palava-social').style.display='flex';}
+function palavaSocialClose(){document.getElementById('palava-social').style.display='none';}
+function palavaSocialTab(name,btn){document.querySelectorAll('#palava-social .ps-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('#palava-social .ps-tabs button').forEach(b=>b.classList.remove('active'));document.getElementById('ps-'+name).classList.add('active');btn.classList.add('active');if(name==='wallet')palavaLoadWallet();}
+function palavaVisit(place){document.getElementById('ps-map-result').textContent='You arrived at '+place+'! You found a new meetup point. Open Players to see who is online, or try Danfo Dash for points.';window.palavaCurrentStop=place;}
+let psScore=0,psTime=10,psTimer=null,psRunning=false;
+function palavaStartMiniGame(){clearInterval(psTimer);psScore=0;psTime=10;psRunning=true;document.getElementById('ps-score').textContent=psScore;document.getElementById('ps-time').textContent=psTime;document.getElementById('ps-tap').disabled=false;document.getElementById('ps-start').disabled=true;document.getElementById('ps-game-result').textContent='Go, corper! Tap Run as fast as you can.';psTimer=setInterval(()=>{psTime--;document.getElementById('ps-time').textContent=psTime;if(psTime<=0){clearInterval(psTimer);psRunning=false;document.getElementById('ps-tap').disabled=true;document.getElementById('ps-start').disabled=false;document.getElementById('ps-game-result').textContent='Time up! You scored '+psScore+' PALAVA points. Play again to beat your record.'}},1000);}
+function palavaTapGame(){if(!psRunning)return;psScore++;document.getElementById('ps-score').textContent=psScore;}
+async function palavaLoadPlayers(){const out=document.getElementById('ps-player-result');out.textContent='Loading players…';try{const r=await fetch('/api/online/players',{credentials:'same-origin'});const d=await r.json();out.textContent=d.players?.length?d.players.map(p=>'👤 '+(p.displayName||p.username)+' (@'+p.username+')').join('\n'):'No registered players yet.'}catch(e){out.textContent='Could not load players. Check your connection and retry.'}}
+async function palavaLoadWallet(){const out=document.getElementById('ps-wallet-balance');try{const r=await fetch('/api/wallet',{credentials:'same-origin'});const d=await r.json();if(!r.ok)throw Error(d.error||'Please sign in first.');out.textContent='Available game balance: ₦'+Number(d.balance).toLocaleString('en-NG');}catch(e){out.textContent=e.message||'Please sign in to use your wallet.'}}
+async function palavaSendMoney(){const out=document.getElementById('ps-wallet-result');out.textContent='Processing…';const recipient=document.getElementById('ps-recipient').value.trim();const amount=Number(document.getElementById('ps-amount').value);try{const r=await fetch('/api/wallet/transfer',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipient,amount})});const d=await r.json();if(!r.ok)throw Error(d.error||'Transfer failed.');out.textContent=d.message+' New balance: ₦'+Number(d.balance).toLocaleString('en-NG');palavaLoadWallet();}catch(e){out.textContent=e.message||'Transfer failed. Sign in and try again.'}}
+</script>
+
 </body>
 </html>
