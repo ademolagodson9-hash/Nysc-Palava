@@ -5,7 +5,8 @@
   "description": "PALAVA — a browser-playable NYSC life adventure game",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node test.js"
   },
   "engines": {
     "node": ">=18"
