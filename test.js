@@ -104,6 +104,11 @@ async function main() {
     r = await req('/verify/' + encodeURIComponent(serial));
     assert.equal(r.status, 200, 'certificate public page');
 
+    r = await req('/api/account', { method: 'DELETE', headers: { Cookie: cookie } });
+    assert.equal(r.status, 200, 'account deletion');
+    r = await req('/api/auth/me', { headers: { Cookie: cookie } });
+    assert.equal((await json(r)).user, null, 'account deletion clears session');
+
     r = await req('/api/auth/logout', { method: 'POST', headers: { Cookie: cookie } });
     assert.equal(r.status, 200, 'logout');
 
@@ -117,7 +122,7 @@ async function main() {
     r = await req('/sitemap.xml');
     assert.equal(r.status, 200, 'sitemap served');
 
-    console.log('PALAVA smoke tests passed: health, auth, save/load, chat, certificate verification, PWA assets, SEO files.');
+    console.log('PALAVA smoke tests passed: health, auth, save/load, chat, certificate verification, account deletion, PWA assets, SEO files.');
   } finally {
     child.kill('SIGTERM');
   }
