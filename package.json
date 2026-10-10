@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "test": "node test.js"
+    "test": "node test.js",
+    "prestart": "npm test"
   },
   "engines": {
     "node": ">=18"
