@@ -947,5 +947,42 @@ async function palavaLoadWallet(){const out=document.getElementById('ps-wallet-b
 async function palavaSendMoney(){const out=document.getElementById('ps-wallet-result');out.textContent='Processing…';const recipient=document.getElementById('ps-recipient').value.trim();const amount=Number(document.getElementById('ps-amount').value);try{const r=await fetch('/api/wallet/transfer',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipient,amount})});const d=await r.json();if(!r.ok)throw Error(d.error||'Transfer failed.');out.textContent=d.message+' New balance: ₦'+Number(d.balance).toLocaleString('en-NG');palavaLoadWallet();}catch(e){out.textContent=e.message||'Transfer failed. Sign in and try again.'}}
 </script>
 
+
+<style>
+#palava-welcome{position:fixed;inset:0;z-index:10020;overflow:auto;background:#07150e;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+#palava-welcome[hidden]{display:none}
+.pw-hero{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;isolation:isolate;background:linear-gradient(90deg,rgba(4,28,15,.92),rgba(4,28,15,.68) 52%,rgba(4,28,15,.28)),url('/palava-hero.jpg') center 35%/cover no-repeat}
+.pw-inner{width:min(1080px,100%);display:grid;grid-template-columns:1.2fr .8fr;gap:32px;align-items:center}
+.pw-brand{color:#f5c66a;font-weight:900;letter-spacing:.22em;font-size:13px}
+.pw-title{font-size:clamp(42px,7vw,78px);line-height:.98;letter-spacing:-.05em;margin:18px 0}
+.pw-title span{color:#f5c66a}
+.pw-lead{font-size:clamp(16px,2vw,20px);line-height:1.6;max-width:590px;color:#e4eee6}
+.pw-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}.pw-tags span{border:1px solid #ffffff50;border-radius:999px;padding:8px 12px;background:#07150e66;font-size:13px}
+.pw-panel{background:rgba(249,250,244,.97);color:#173322;padding:26px;border-radius:24px;box-shadow:0 24px 90px #0008}
+.pw-panel h2{font-size:27px;margin:0 0 7px;color:#103b24}.pw-panel p{color:#617267;line-height:1.5}
+.pw-action{display:block;width:100%;border:0;border-radius:12px;padding:14px 16px;margin-top:12px;background:#0d6537;color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+.pw-action.secondary{background:#e8efe7;color:#17452a;border:1px solid #ccdacb}
+.pw-foot{font-size:11px;color:#78857b;margin-top:15px;line-height:1.5}
+@media(max-width:760px){.pw-inner{grid-template-columns:1fr;gap:22px}.pw-hero{padding:18px;align-items:flex-start;background-position:53% center}.pw-title{font-size:clamp(42px,12vw,64px);margin:12px 0}.pw-panel{padding:21px}.pw-lead{font-size:16px}}
+</style>
+<div id="palava-welcome" role="dialog" aria-label="Welcome to PALAVA">
+ <main class="pw-hero"><div class="pw-inner">
+  <section><div class="pw-brand">PALAVA • NYSC ADVENTURE</div>
+   <h1 class="pw-title">YOUR SERVICE YEAR.<br><span>YOUR STORY.</span></h1>
+   <p class="pw-lead">Explore Oyo and Osun, take on corper missions, meet fellow players and survive the beautiful chaos of service year.</p>
+   <div class="pw-tags"><span>🗺️ Explore Oyo & Osun</span><span>🎮 Mini challenges</span><span>👥 Meet corpers</span></div>
+  </section>
+  <section class="pw-panel"><div style="font-size:32px;margin-bottom:8px">🚌</div><h2>Welcome, corper!</h2><p>Start your PALAVA journey. Create a profile or return to the game if you already have one.</p>
+   <button class="pw-action" onclick="palavaEnterGame()">Start Your Service Year</button>
+   <button class="pw-action secondary" onclick="palavaEnterGame()">Create Account / Log In</button>
+   <div class="pw-foot">PALAVA is an independent fan-made game project and is not an official NYSC service or banking platform. Virtual wallet balances are game currency only.</div>
+  </section>
+ </div></main>
+</div>
+<script>
+function palavaEnterGame(){const el=document.getElementById('palava-welcome');if(el)el.hidden=true;try{sessionStorage.setItem('palavaWelcomeSeen','1')}catch(e){}}
+(function(){try{if(sessionStorage.getItem('palavaWelcomeSeen')==='1'){const el=document.getElementById('palava-welcome');if(el)el.hidden=true}}catch(e){}})();
+</script>
+
 </body>
 </html>
