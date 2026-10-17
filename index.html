@@ -980,7 +980,7 @@ async function palavaSendMoney(){const out=document.getElementById('ps-wallet-re
  </div></main>
 </div>
 <script>
-function palavaEnterGame(){window.location.href='/3d.html';}
+function palavaEnterGame(){const el=document.getElementById('palava-welcome');if(el)el.hidden=true;try{sessionStorage.setItem('palavaWelcomeSeen','1')}catch(e){}}
 (function(){try{if(sessionStorage.getItem('palavaWelcomeSeen')==='1'){const el=document.getElementById('palava-welcome');if(el)el.hidden=true}}catch(e){}})();
 </script>
 
