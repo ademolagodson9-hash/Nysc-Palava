@@ -951,7 +951,7 @@ async function palavaSendMoney(){const out=document.getElementById('ps-wallet-re
 <style>
 #palava-welcome{position:fixed;inset:0;z-index:10020;overflow:auto;background:#07150e;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
 #palava-welcome[hidden]{display:none}
-.pw-hero{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;isolation:isolate;background:linear-gradient(90deg,rgba(4,28,15,.92),rgba(4,28,15,.68) 52%,rgba(4,28,15,.28)),url('/palava-hero.jpg') center 35%/cover no-repeat}
+.pw-hero{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(90deg,rgba(4,28,15,.88),rgba(4,28,15,.55) 52%,rgba(4,28,15,.25)),radial-gradient(ellipse at 75% 30%,#518b5b,#173c29 65%,#07150e)}#palava-world3d{position:absolute;inset:0;width:100%;height:100%;z-index:-1;display:block}.pw-inner{position:relative;z-index:1}
 .pw-inner{width:min(1080px,100%);display:grid;grid-template-columns:1.2fr .8fr;gap:32px;align-items:center}
 .pw-brand{color:#f5c66a;font-weight:900;letter-spacing:.22em;font-size:13px}
 .pw-title{font-size:clamp(42px,7vw,78px);line-height:.98;letter-spacing:-.05em;margin:18px 0}
@@ -979,6 +979,43 @@ async function palavaSendMoney(){const out=document.getElementById('ps-wallet-re
   </section>
  </div></main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+/* PALAVA animated 3D welcome world — visual layer only; original game systems remain intact. */
+(function(){
+ const host=document.querySelector('.pw-hero'); if(!host||!window.THREE)return;
+ const canvas=document.createElement('canvas');canvas.id='palava-world3d';canvas.setAttribute('aria-hidden','true');host.prepend(canvas);
+ try{
+  const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc9dc);scene.fog=new THREE.Fog(0x9fc9dc,22,100);
+  const camera=new THREE.PerspectiveCamera(52,1,.1,160);camera.position.set(0,5,15);
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;
+  scene.add(new THREE.HemisphereLight(0xe5f5ff,0x3e5337,2));
+  const sun=new THREE.DirectionalLight(0xffe3ae,2.5);sun.position.set(-12,20,10);sun.castShadow=true;sun.shadow.mapSize.set(512,512);scene.add(sun);
+  const mat=(c,r=.86)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
+  const grass=mat(0x3f7744),asphalt=mat(0x4b514d),cream=mat(0xe0d1ad),roof=mat(0x51463b),glass=mat(0x8bbdc5,.28),leaf=mat(0x28633a),skin=mat(0x825037),khaki=mat(0x8a9b58),boots=mat(0x292c26),gold=mat(0xf4c66a);
+  function box(parent,x,y,z,w,h,d,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+  function tree(x,z,scale){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.13*scale,.2*scale,1.5*scale,7),mat(0x64452f));trunk.position.y=.75*scale;g.add(trunk);for(let j=0;j<3;j++){const crown=new THREE.Mesh(new THREE.IcosahedronGeometry((.75-j*.1)*scale,1),mat(j===1?0x367b43:0x28633a));crown.position.set((j-1)*.25*scale,(1.55+j*.22)*scale,0);crown.castShadow=true;g.add(crown)}}
+  box(scene,0,-.3,-25,100,.5,100,grass);box(scene,0,-.02,-25,9,.12,100,asphalt);
+  for(let z=-72;z<20;z+=7)box(scene,0,.05,z,.12,.025,3.2,cream);
+  for(let z=-68;z<18;z+=10){tree(-7,z,.9+Math.random()*.45);tree(7,z,.9+Math.random()*.45)}
+  function building(x,z,w,h,d,c){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);box(g,0,h/2,0,w,h,d,mat(c));box(g,0,h+.12,0,w+.2,.24,d+.2,roof);for(let y=1;y<h-.4;y+=1.25)for(let xx=-w/2+.5;xx<w/2-.3;xx+=1.15)box(g,xx,y,d/2+.015,.5,.5,.035,glass);box(g,0,.48,d/2+.04,1,.95,.08,roof)}
+  building(-7,-5,5,4,5,0xd8c5a1);building(7,-13,5,6,6,0xc9d3bf);building(-7,-23,5,4.5,6,0xe0cda8);building(7,-34,5.5,5,6,0xd8d7c7);
+  // Low-poly but fully animated NYSC corps member in khaki; intended as a visual preview, not a final realistic asset.
+  const p=new THREE.Group();scene.add(p);p.position.set(-1.1,0,5);
+  box(p,0,1.35,0,.62,.82,.34,khaki);box(p,0,1.84,0,.12,.18,.14,skin);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),skin);head.position.y=2.08;p.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.225,12,8,0,Math.PI*2,0,Math.PI*.55),boots);hair.position.y=2.15;p.add(hair);
+  const cap=box(p,0,2.31,0,.48,.08,.43,khaki);
+  const legs=[];for(const x of [-.17,.17]){const l=box(p,x,.57,0,.19,.63,.22,khaki);box(p,x,.17,.07,.22,.15,.34,boots);legs.push(l)}
+  const arms=[];for(const x of [-.42,.42]){const a=box(p,x,1.35,0,.16,.62,.17,khaki);a.rotation.z=x<0?-.12:.12;arms.push(a)}
+  // A moving danfo-style bus gives the scene a sense of life.
+  const bus=new THREE.Group();scene.add(bus);bus.position.set(3,0,1);box(bus,0,.65,0,1.4,.9,2.2,mat(0xd7b536));box(bus,0,1.02,-.05,1.25,.35,1.6,glass);for(const x of [-.55,.55])for(const z of [-.7,.7]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.12,12),boots);w.rotation.z=Math.PI/2;w.position.set(x,.25,z);bus.add(w)}
+  const cloudGroup=new THREE.Group();scene.add(cloudGroup);for(let i=0;i<8;i++){const c=new THREE.Mesh(new THREE.SphereGeometry(.55+Math.random()*.4,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55}));c.position.set(-18+i*5,8+Math.random()*3,-18-Math.random()*30);cloudGroup.add(c)}
+  const resize=()=>{const w=host.clientWidth||innerWidth,h=host.clientHeight||innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};resize();addEventListener('resize',resize);
+  let last=0;function animate(t){requestAnimationFrame(animate);const time=t*.001,dt=Math.min(.04,(t-last)*.001||.016);last=t;p.position.y=Math.abs(Math.sin(time*5))*.035;legs[0].rotation.x=Math.sin(time*5)*.42;legs[1].rotation.x=-Math.sin(time*5)*.42;arms[0].rotation.x=-Math.sin(time*5)*.22;arms[1].rotation.x=Math.sin(time*5)*.22;bus.position.z=1+Math.sin(time*.35)*5;bus.position.x=3+Math.sin(time*.22)*1.5;cloudGroup.position.x=Math.sin(time*.04)*2;camera.position.x=Math.sin(time*.09)*.45;camera.lookAt(0,2,-10);renderer.render(scene,camera)}requestAnimationFrame(animate);
+ }catch(e){canvas.remove()}
+})();
+</script>
 <script>
 function palavaEnterGame(){const el=document.getElementById('palava-welcome');if(el)el.hidden=true;try{sessionStorage.setItem('palavaWelcomeSeen','1')}catch(e){}}
 (function(){try{if(sessionStorage.getItem('palavaWelcomeSeen')==='1'){const el=document.getElementById('palava-welcome');if(el)el.hidden=true}}catch(e){}})();
