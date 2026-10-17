@@ -131,6 +131,41 @@ app.delete('/api/account',(req,res)=>{
   res.setHeader('Set-Cookie','palava_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'+(process.env.NODE_ENV==='production'?'; Secure':''));
   res.json({ok:true,message:'Account and associated game data deleted from the active PALAVA service.'});
 });
+
+// Lightweight multiplayer rooms: shared state is in memory on this starter deployment.
+// Use PostgreSQL + WebSockets/Socket.IO before production-scale or ranked play.
+const gameRooms = new Map();
+const GAME_TYPES = new Set(['ludo','whot','ayo','chess']);
+function roomPublic(r){return {id:r.id,game:r.game,title:r.title,host:r.host,players:r.players.map(p=>({username:p.username,displayName:p.displayName})),maxPlayers:r.maxPlayers,status:r.players.length>=r.maxPlayers?'full':'waiting',turn:r.turn,events:r.events.slice(-12),state:r.state,updatedAt:r.updatedAt};}
+app.get('/api/multiplayer/rooms',(req,res)=>res.json({rooms:[...gameRooms.values()].filter(r=>r.status!=='closed').map(roomPublic)}));
+app.post('/api/multiplayer/rooms',(req,res)=>{
+ const u=currentUser(req);if(!u)return err(res,401,'Sign in to create a multiplayer room.');
+ const game=String(req.body?.game||'').toLowerCase();if(!GAME_TYPES.has(game))return err(res,400,'Choose Ludo, Whot, Ayo Opon or Chess.');
+ const maxPlayers=game==='chess'||game==='ayo'?2:game==='whot'?4:4;
+ const id=crypto.randomBytes(3).toString('hex').toUpperCase();
+ const room={id,game,title:String(req.body?.title||game.toUpperCase()+' room').slice(0,50),host:u.username,players:[{username:u.username,displayName:u.displayName}],maxPlayers,turn:0,events:[{type:'system',text:u.displayName+' created a '+game.toUpperCase()+' room',t:Date.now()}],state:{moves:[],started:false},updatedAt:Date.now(),status:'waiting'};
+ gameRooms.set(id,room);res.status(201).json({room:roomPublic(room)});
+});
+app.post('/api/multiplayer/rooms/:id/join',(req,res)=>{
+ const u=currentUser(req);if(!u)return err(res,401,'Sign in to join multiplayer games.');
+ const r=gameRooms.get(String(req.params.id).toUpperCase());if(!r||r.status==='closed')return err(res,404,'Room not found.');
+ if(!r.players.some(p=>p.username===u.username)){if(r.players.length>=r.maxPlayers)return err(res,409,'This room is full.');r.players.push({username:u.username,displayName:u.displayName});r.events.push({type:'system',text:u.displayName+' joined the room',t:Date.now()});r.updatedAt=Date.now();}
+ if(r.players.length>=2)r.state.started=true;res.json({room:roomPublic(r)});
+});
+app.post('/api/multiplayer/rooms/:id/move',(req,res)=>{
+ const u=currentUser(req);if(!u)return err(res,401,'Sign in to play multiplayer games.');
+ const r=gameRooms.get(String(req.params.id).toUpperCase());if(!r||!r.players.some(p=>p.username===u.username))return err(res,404,'Join this room before playing.');
+ const text=String(req.body?.text||'').trim().slice(0,180);if(!text)return err(res,400,'Enter a move or game action.');
+ r.state.moves.push({by:u.username,text,t:Date.now()});r.events.push({type:'move',text:u.displayName+': '+text,t:Date.now()});r.turn=(r.turn+1)%Math.max(1,r.players.length);r.updatedAt=Date.now();res.json({room:roomPublic(r)});
+});
+app.post('/api/multiplayer/rooms/:id/leave',(req,res)=>{
+ const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');
+ const r=gameRooms.get(String(req.params.id).toUpperCase());if(!r)return res.json({ok:true});
+ r.players=r.players.filter(p=>p.username!==u.username);r.events.push({type:'system',text:u.displayName+' left the room',t:Date.now()});r.updatedAt=Date.now();
+ if(!r.players.length)gameRooms.delete(r.id);else if(r.host===u.username)r.host=r.players[0].username;
+ res.json({ok:true});
+});
+
 app.use(express.static(__dirname,{extensions:['html'],maxAge:'1h'}));
 app.get('*',(req,res)=>req.path.startsWith('/api/')?err(res,404,'API route not found.'):res.sendFile(path.join(__dirname,'index.html')));
 app.listen(PORT,'0.0.0.0',()=>console.log('PALAVA listening on '+PORT));
