@@ -92,6 +92,27 @@ async function main() {
     r = await req('/api/chat');
     assert.ok((await json(r)).messages.some(message => message.text === 'PALAVA smoke test'), 'read chat');
 
+    r = await req('/api/multiplayer/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ game: 'ludo' })
+    });
+    assert.equal(r.status, 201, 'create multiplayer Ludo room');
+    const room = (await json(r)).room;
+    assert.equal(room.game, 'ludo', 'room game type');
+    assert.equal(room.players.length, 1, 'host added to room');
+
+    r = await req('/api/multiplayer/rooms/' + room.id + '/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ text: 'roll: 6; move: 1' })
+    });
+    assert.equal(r.status, 200, 'submit multiplayer room action');
+    assert.ok((await json(r)).room.events.some(event => event.text.includes('roll: 6')), 'room action is shared');
+
+    r = await req('/api/multiplayer/rooms');
+    assert.ok((await json(r)).rooms.some(item => item.id === room.id), 'list multiplayer rooms');
+
     r = await req('/api/certificate', { headers: { Cookie: cookie } });
     assert.equal(r.status, 200, 'issue certificate');
     const serial = (await json(r)).cert;
