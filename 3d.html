@@ -93,7 +93,7 @@ function showEngineFallback(){
   const warning=document.createElement('div');warning.className='brand';warning.style.cssText='position:fixed;left:12px;top:90px;max-width:300px;z-index:4;background:#542b16;border:1px solid #ffcc88;padding:12px;border-radius:12px';warning.innerHTML='<b>3D engine did not load</b><p style="margin:6px 0">Mini-games are still available. Check your connection and reload for the 3D world.</p>';document.body.appendChild(warning);
   document.getElementById('gamesBtn').click();
 }
-if(window.THREE){bootPALAVA();}else{
+if(window.THREE){try{bootPALAVA();}catch(e){console.error(e);showEngineFallback();}}else{
   const fallbackScript=document.createElement('script');
   fallbackScript.src='https://unpkg.com/three@0.160.0/build/three.min.js';
   fallbackScript.onload=()=>{try{bootPALAVA();}catch(e){console.error(e);showEngineFallback();}};
