@@ -7,8 +7,8 @@
 <div id="hud"><div class="top"><div class="brand"><strong>PALAVA / 3D</strong><small>NYSC adventure • Southwest Nigeria</small><div class="stats"><span class="pill" id="statePill">Oyo State</span><span class="pill" id="dayPill">Day 1</span><span class="pill" id="xpPill">XP 0</span></div></div><div class="mission"><b id="missionTitle">FIRST DAY IN CAMP</b><div id="missionText">Explore the camp and meet fellow corps members.</div><button class="primary" id="missionBtn" style="margin-top:8px">Complete nearby task</button></div></div><div class="bottom"><span>Move: WASD / arrows · Sprint: Shift · Explore the golden markers</span><div class="actions"><button id="statesBtn">🗺 States</button><button id="missionsBtn">📋 Missions</button><button id="gamesBtn">🎲 Mini-games</button><button id="socialBtn">👥 Multiplayer</button><button id="backBtn">↩ Main game</button></div></div></div>
 <div class="touch"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div>
 <div class="overlay" id="modalWrap"><div class="modal"><div class="row" style="justify-content:space-between"><h2 id="modalTitle">PALAVA</h2><button id="closeModal" style="flex:0 0 auto">Close ✕</button></div><div id="modalBody"></div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script><script>
-(function(){
+<script>
+function bootPALAVA(){
 'use strict';
 const $=id=>document.getElementById(id), esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const states=[
@@ -64,5 +64,40 @@ $('modalBody').addEventListener('click',e=>{let s=e.target.closest('[data-state]
 window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);document.querySelectorAll('[data-move]').forEach(b=>{b.addEventListener('touchstart',e=>{e.preventDefault();moveTouch=b.dataset.move},{passive:false});b.addEventListener('touchend',()=>moveTouch='')});
 function animate(t){requestAnimationFrame(animate);let dx=0,dz=0;if(keys.w||keys.arrowup||moveTouch==='up')dz-=1;if(keys.s||keys.arrowdown||moveTouch==='down')dz+=1;if(keys.a||keys.arrowleft||moveTouch==='left')dx-=1;if(keys.d||keys.arrowright||moveTouch==='right')dx+=1;let moving=dx||dz;if(moving){let speed=(keys.shift ? .13 : .075);let len=Math.hypot(dx,dz);character.position.x+=dx/len*speed*16;character.position.z+=dz/len*speed*16;character.position.x=Math.max(-5,Math.min(5,character.position.x));character.position.z=Math.max(-85,Math.min(12,character.position.z));character.rotation.y=Math.atan2(dx,dz);legs[0].rotation.x=Math.sin(t*.012)*.6;legs[1].rotation.x=-legs[0].rotation.x;arms[0].rotation.x=-legs[0].rotation.x*.65;arms[1].rotation.x=-legs[1].rotation.x*.65}else{legs.forEach(l=>l.rotation.x=0);arms.forEach(a=>a.rotation.x=0)}camera.position.lerp(new THREE.Vector3(character.position.x,character.position.y+5.3,character.position.z+10),.08);camera.lookAt(character.position.x,1,character.position.z-3);markerGroup.children.forEach((m,i)=>{m.rotation.y=t*.0006;m.children[1].position.y=1.2+Math.sin(t*.003+i)*.2});bus.position.z=Math.sin(t*.0005)*20-12;renderer.render(scene,camera)}
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}addEventListener('resize',resize);resize();rebuildState();animate(0);
-})();
+}
+
+function showEngineFallback(){
+  const modal=document.getElementById('modalWrap'), body=document.getElementById('modalBody');
+  const title=document.getElementById('modalTitle');
+  const stateNames=['Lagos','Ogun','Oyo','Osun','Ondo','Ekiti'];
+  const capitals=['Ikeja','Abeokuta','Ibadan','Osogbo','Akure','Ado-Ekiti'];
+  let game=''; 
+  const open=(t,h)=>{title.textContent=t;body.innerHTML=h;modal.style.display='flex';};
+  const menu=()=>open('PALAVA MINI-GAMES','<p>3D graphics could not load on this connection, but the mini-games are available here.</p><div class="grid"><button data-game="ludo">🎲 Ludo</button><button data-game="whot">🃏 Whot</button><button data-game="ayo">🪘 Ayo Opon</button><button data-game="chess">♟ Chess board</button></div><div id="fallbackGame"></div>');
+  document.getElementById('gamesBtn').onclick=menu;
+  document.getElementById('socialBtn').onclick=()=>open('MULTIPLAYER','<p>Multiplayer needs the 3D client engine in this build. Return to the main game to sign in and access your account.</p><a href="/">Open main game</a>');
+  document.getElementById('statesBtn').onclick=()=>open('SOUTHWEST NIGERIA','<div class="grid">'+stateNames.map((s,i)=>'<div class="card"><b>'+s+' State</b><p>'+capitals[i]+'</p></div>').join('')+'</div>');
+  document.getElementById('missionsBtn').onclick=()=>open('SERVICE YEAR MISSIONS','<div class="card"><b>Orientation camp</b><p>Meet fellow corps members, complete camp drills and learn the NYSC routine.</p></div><div class="card"><b>Place of Primary Assignment</b><p>Report to your supervisor, contribute to your community and build your skills.</p></div><div class="card"><b>Community Development Service</b><p>Organise a sanitation drive, support a school or help a local business.</p></div>');
+  document.getElementById('missionBtn').onclick=()=>open('MISSION UPDATE','<p>Your next mission is ready. Please retry the 3D page when your connection allows the graphics engine to load.</p>');
+  document.getElementById('backBtn').onclick=()=>location.href='/';
+  document.getElementById('closeModal').onclick=()=>modal.style.display='none';
+  body.addEventListener('click',e=>{
+    const b=e.target.closest('[data-game]'); if(!b)return;
+    game=b.dataset.game; const host=document.getElementById('fallbackGame');
+    if(game==='ludo'){let pos=0;host.innerHTML='<div class="card"><b>Ludo</b><p id="fbStatus">Roll the die to move.</p><button id="fbRoll">🎲 Roll</button></div>';host.querySelector('#fbRoll').onclick=()=>{let n=1+Math.floor(Math.random()*6);pos=Math.min(57,pos+n);host.querySelector('#fbStatus').textContent='You rolled '+n+'. Token position '+pos+(pos===57?' — home!':'');};}
+    else if(game==='whot'){let suits=['Circle','Triangle','Cross','Square','Star'],top=suits[Math.floor(Math.random()*5)];host.innerHTML='<div class="card"><b>Whot</b><p id="fbTop">Top card: '+top+'</p><div class="grid">'+suits.map(s=>'<button data-suit="'+s+'">'+s+'</button>').join('')+'</div><p id="fbResult"></p></div>';host.querySelectorAll('[data-suit]').forEach(x=>x.onclick=()=>{if(x.dataset.suit===top){top=suits[Math.floor(Math.random()*5)];host.querySelector('#fbTop').textContent='Top card: '+top;host.querySelector('#fbResult').textContent='Correct match!';}else host.querySelector('#fbResult').textContent='Try matching the top card.';});}
+    else if(game==='ayo'){let pits=Array(12).fill(4);host.innerHTML='<div class="card"><b>Ayo Opon</b><p>Tap a pit on your row to sow seeds.</p><div class="grid">'+pits.map((v,i)=>'<button data-pit="'+i+'">Pit '+(i+1)+'<br><b id="fbPit'+i+'">'+v+'</b></button>').join('')+'</div><p id="fbAyo"></p></div>';host.querySelectorAll('[data-pit]').forEach(x=>x.onclick=()=>{let i=+x.dataset.pit;if(i>5){host.querySelector('#fbAyo').textContent='Choose one of your six pits.';return;}let n=pits[i];pits[i]=0;for(let k=1;k<=n;k++)pits[(i+k)%12]++;pits.forEach((v,j)=>host.querySelector('#fbPit'+j).textContent=v);host.querySelector('#fbAyo').textContent='Sowed '+n+' seeds.';});}
+    else {const pieces=['♜','♞','♝','♛','♚','♝','♞','♜'];let board=Array(64).fill('');pieces.forEach((p,i)=>{board[i]=p;board[56+i]=p;});let selected=null;host.innerHTML='<div class="card"><b>Chess board</b><p id="fbChess">Select a piece, then a square.</p><div style="display:grid;grid-template-columns:repeat(8,minmax(22px,1fr));gap:2px">'+board.map((p,i)=>'<button data-sq="'+i+'" style="padding:4px 0;min-width:0;background:'+((Math.floor(i/8)+i%8)%2?'#b6c5a1':'#e8e2cf')+';color:#18241b">'+p+'</button>').join('')+'</div></div>';host.querySelectorAll('[data-sq]').forEach(x=>x.onclick=()=>{let i=+x.dataset.sq;if(selected===null){if(!board[i])return;selected=i;host.querySelector('#fbChess').textContent='Piece selected. Choose destination.';}else{board[i]=board[selected];board[selected]='';selected=null;host.querySelectorAll('[data-sq]').forEach((el,j)=>el.textContent=board[j]);host.querySelector('#fbChess').textContent='Move made (practice board; legal chess rules are not enforced).';}});}
+  });
+  document.getElementById('modalWrap').style.display='none';
+  const warning=document.createElement('div');warning.className='brand';warning.style.cssText='position:fixed;left:12px;top:90px;max-width:300px;z-index:4;background:#542b16;border:1px solid #ffcc88;padding:12px;border-radius:12px';warning.innerHTML='<b>3D engine did not load</b><p style="margin:6px 0">Mini-games are still available. Check your connection and reload for the 3D world.</p>';document.body.appendChild(warning);
+  document.getElementById('gamesBtn').click();
+}
+if(window.THREE){bootPALAVA();}else{
+  const fallbackScript=document.createElement('script');
+  fallbackScript.src='https://unpkg.com/three@0.160.0/build/three.min.js';
+  fallbackScript.onload=()=>{try{bootPALAVA();}catch(e){console.error(e);showEngineFallback();}};
+  fallbackScript.onerror=showEngineFallback;
+  document.head.appendChild(fallbackScript);
+}
 </script></body></html>
