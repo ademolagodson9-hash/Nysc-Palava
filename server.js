@@ -136,12 +136,22 @@ app.delete('/api/account',(req,res)=>{
 // Use PostgreSQL + WebSockets/Socket.IO before production-scale or ranked play.
 const gameRooms = new Map();
 const GAME_TYPES = new Set(['ludo','whot','ayo','chess']);
-function roomPublic(r){return {id:r.id,game:r.game,title:r.title,host:r.host,players:r.players.map(p=>({username:p.username,displayName:p.displayName})),maxPlayers:r.maxPlayers,status:r.players.length>=r.maxPlayers?'full':'waiting',turn:r.turn,events:r.events.slice(-12),state:r.state,updatedAt:r.updatedAt};}
+function roomPublic(r){return {id:r.id,game:r.game,title:r.title,host:r.host,players:r.players.map(p=>({username:p.username,displayName:p.displayName})),maxPlayers:r.maxPlayers,status:r.status==='closed'?'closed':(r.players.length>=r.maxPlayers?'full':'waiting'),turn:r.turn,events:r.events.slice(-30),state:{started:!!r.state.started,moves:r.state.moves.slice(-100)},updatedAt:r.updatedAt};}
+function roomEvent(r,event){r.events.push(event);if(r.events.length>100)r.events.splice(0,r.events.length-100);r.updatedAt=Date.now();}
 app.get('/api/multiplayer/rooms',(req,res)=>res.json({rooms:[...gameRooms.values()].filter(r=>r.status!=='closed').map(roomPublic)}));
+app.get('/api/multiplayer/rooms/:id',(req,res)=>{
+ const u=currentUser(req);if(!u)return err(res,401,'Sign in to view a multiplayer room.');
+ const r=gameRooms.get(String(req.params.id).toUpperCase());
+ if(!r||r.status==='closed')return err(res,404,'Room not found.');
+ if(!r.players.some(p=>p.username===u.username))return err(res,403,'Join this room to view its live game feed.');
+ res.setHeader('Cache-Control','no-store');
+ res.json({room:roomPublic(r)});
+});
 app.post('/api/multiplayer/rooms',(req,res)=>{
  const u=currentUser(req);if(!u)return err(res,401,'Sign in to create a multiplayer room.');
  const game=String(req.body?.game||'').toLowerCase();if(!GAME_TYPES.has(game))return err(res,400,'Choose Ludo, Whot, Ayo Opon or Chess.');
  const maxPlayers=game==='chess'||game==='ayo'?2:game==='whot'?4:4;
+ if(gameRooms.size>=100)return err(res,503,'The multiplayer lobby is busy. Try again shortly.');
  const id=crypto.randomBytes(3).toString('hex').toUpperCase();
  const room={id,game,title:String(req.body?.title||game.toUpperCase()+' room').slice(0,50),host:u.username,players:[{username:u.username,displayName:u.displayName}],maxPlayers,turn:0,events:[{type:'system',text:u.displayName+' created a '+game.toUpperCase()+' room',t:Date.now()}],state:{moves:[],started:false},updatedAt:Date.now(),status:'waiting'};
  gameRooms.set(id,room);res.status(201).json({room:roomPublic(room)});
@@ -149,19 +159,19 @@ app.post('/api/multiplayer/rooms',(req,res)=>{
 app.post('/api/multiplayer/rooms/:id/join',(req,res)=>{
  const u=currentUser(req);if(!u)return err(res,401,'Sign in to join multiplayer games.');
  const r=gameRooms.get(String(req.params.id).toUpperCase());if(!r||r.status==='closed')return err(res,404,'Room not found.');
- if(!r.players.some(p=>p.username===u.username)){if(r.players.length>=r.maxPlayers)return err(res,409,'This room is full.');r.players.push({username:u.username,displayName:u.displayName});r.events.push({type:'system',text:u.displayName+' joined the room',t:Date.now()});r.updatedAt=Date.now();}
+ if(!r.players.some(p=>p.username===u.username)){if(r.players.length>=r.maxPlayers)return err(res,409,'This room is full.');r.players.push({username:u.username,displayName:u.displayName});roomEvent(r,{type:'system',text:u.displayName+' joined the room',t:Date.now()});}
  if(r.players.length>=2)r.state.started=true;res.json({room:roomPublic(r)});
 });
 app.post('/api/multiplayer/rooms/:id/move',(req,res)=>{
  const u=currentUser(req);if(!u)return err(res,401,'Sign in to play multiplayer games.');
  const r=gameRooms.get(String(req.params.id).toUpperCase());if(!r||!r.players.some(p=>p.username===u.username))return err(res,404,'Join this room before playing.');
  const text=String(req.body?.text||'').trim().slice(0,180);if(!text)return err(res,400,'Enter a move or game action.');
- r.state.moves.push({by:u.username,text,t:Date.now()});r.events.push({type:'move',text:u.displayName+': '+text,t:Date.now()});r.turn=(r.turn+1)%Math.max(1,r.players.length);r.updatedAt=Date.now();res.json({room:roomPublic(r)});
+ const move={by:u.username,text,t:Date.now()};r.state.moves.push(move);if(r.state.moves.length>100)r.state.moves.splice(0,r.state.moves.length-100);roomEvent(r,{type:'move',text:u.displayName+': '+text,t:Date.now()});r.turn=(r.turn+1)%Math.max(1,r.players.length);res.setHeader('Cache-Control','no-store');res.json({room:roomPublic(r)});
 });
 app.post('/api/multiplayer/rooms/:id/leave',(req,res)=>{
  const u=currentUser(req);if(!u)return err(res,401,'Sign in required.');
  const r=gameRooms.get(String(req.params.id).toUpperCase());if(!r)return res.json({ok:true});
- r.players=r.players.filter(p=>p.username!==u.username);r.events.push({type:'system',text:u.displayName+' left the room',t:Date.now()});r.updatedAt=Date.now();
+ r.players=r.players.filter(p=>p.username!==u.username);roomEvent(r,{type:'system',text:u.displayName+' left the room',t:Date.now()});
  if(!r.players.length)gameRooms.delete(r.id);else if(r.host===u.username)r.host=r.players[0].username;
  res.json({ok:true});
 });
