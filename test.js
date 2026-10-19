@@ -12,7 +12,7 @@ async function main() {
     if (!/application\/ld\+json/i.test(match[1]) && match[2].trim()) new vm.Script(match[2], { filename: 'index.html inline script' });
   }
   new vm.Script(onlineJs, { filename: 'online.js' });
-  const adventureScripts = [...adventure3d.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]).filter(script => script.trim());
+  const adventureScripts = [...adventure3d.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(match => match[1]).filter(script => script.trim());
   assert.ok(adventureScripts.length, '3D adventure inline script exists');
   for (const script of adventureScripts) new vm.Script(script, { filename: '3d.html inline script' });
   assert.match(adventure3d, /showEngineFallback/);
