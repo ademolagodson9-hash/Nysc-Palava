@@ -102,6 +102,13 @@ async function main() {
     assert.equal(room.game, 'ludo', 'room game type');
     assert.equal(room.players.length, 1, 'host added to room');
 
+    r = await req('/api/multiplayer/rooms/' + room.id, { headers: { Cookie: cookie } });
+    assert.equal(r.status, 200, 'room polling endpoint');
+    assert.equal((await json(r)).room.id, room.id, 'room polling returns current room');
+
+    r = await req('/api/multiplayer/rooms/' + room.id, { headers: { Cookie: 'palava_session=invalid' } });
+    assert.equal(r.status, 401, 'room polling requires authentication');
+
     r = await req('/api/multiplayer/rooms/' + room.id + '/move', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: cookie },
@@ -143,7 +150,7 @@ async function main() {
     r = await req('/sitemap.xml');
     assert.equal(r.status, 200, 'sitemap served');
 
-    console.log('PALAVA smoke tests passed: health, auth, save/load, chat, certificate verification, account deletion, PWA assets, SEO files.');
+    console.log('PALAVA smoke tests passed: health, auth, save/load, chat, multiplayer room polling/moves, certificate verification, account deletion, PWA assets, SEO files.');
   } finally {
     child.kill('SIGTERM');
   }
