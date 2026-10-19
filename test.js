@@ -7,10 +7,16 @@ async function main() {
   const html = fs.readFileSync('index.html', 'utf8');
   const manifest = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
   const onlineJs = fs.readFileSync('online.js', 'utf8');
+  const adventure3d = fs.readFileSync('3d.html', 'utf8');
   for (const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)) {
     if (!/application\/ld\+json/i.test(match[1]) && match[2].trim()) new vm.Script(match[2], { filename: 'index.html inline script' });
   }
   new vm.Script(onlineJs, { filename: 'online.js' });
+  const adventureScripts = [...adventure3d.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]).filter(script => script.trim());
+  assert.ok(adventureScripts.length, '3D adventure inline script exists');
+  for (const script of adventureScripts) new vm.Script(script, { filename: '3d.html inline script' });
+  assert.match(adventure3d, /showEngineFallback/);
+  assert.match(adventure3d, /data-game=\"ludo\"/);
   new vm.Script(fs.readFileSync('server.js', 'utf8'), { filename: 'server.js' });
   assert.match(html, /Oyo Community Development Office/);
   assert.match(html, /Osun TechWorks/);
