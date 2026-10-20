@@ -16,6 +16,10 @@ async function main() {
   assert.ok(adventureScripts.length, '3D adventure inline script exists');
   for (const script of adventureScripts) new vm.Script(script, { filename: '3d.html inline script' });
   assert.match(adventure3d, /showEngineFallback/);
+  assert.match(adventure3d, /querySelectorAll\('button\\[data-state\\]'\)\.forEach/);
+  assert.match(adventure3d, /querySelectorAll\('button\\[data-mission\\]'\)\.forEach/);
+  assert.match(adventure3d, /stateIndex=next;missionIndex=0;character\.position\.set\(0,0,5\);rebuildState\(\)/);
+  assert.match(adventure3d, /missionIndex=next;rebuildState\(\)/);
   assert.match(adventure3d, /data-game=\"ludo\"/);
   new vm.Script(fs.readFileSync('server.js', 'utf8'), { filename: 'server.js' });
   assert.match(html, /Oyo Community Development Office/);
