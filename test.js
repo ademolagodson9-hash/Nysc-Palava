@@ -127,7 +127,39 @@ async function main() {
     assert.equal(r.status, 200, 'submit multiplayer room action');
     assert.ok((await json(r)).room.events.some(event => event.text.includes('roll: 6')), 'room action is shared');
 
-    r = await req('/api/multiplayer/rooms');
+    // Verify a second independent account can join the same room and both accounts see shared actions.
+    const username2 = 'test2_' + Date.now().toString(36);
+    r = await req('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username2, password: 'PALAVA-test-456', displayName: 'Second Player' })
+    });
+    assert.equal(r.status, 200, 'register second player');
+    const cookie2 = (r.headers.get('set-cookie') || '').split(';')[0];
+    assert.ok(cookie2.startsWith('palava_session='), 'second player session cookie set');
+
+    r = await req('/api/multiplayer/rooms/' + room.id + '/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie2 },
+      body: '{}'
+    });
+    assert.equal(r.status, 200, 'second player joins room');
+    assert.equal((await json(r)).room.players.length, 2, 'room contains both players');
+
+    r = await req('/api/multiplayer/rooms/' + room.id + '/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie2 },
+      body: JSON.stringify({ text: 'second-player move test' })
+    });
+    assert.equal(r.status, 200, 'second player submits room action');
+
+    r = await req('/api/multiplayer/rooms/' + room.id, { headers: { Cookie: cookie } });
+    const hostRoom = (await json(r)).room;
+    assert.ok(hostRoom.players.some(player => player.username === username2), 'host sees second player in room');
+    assert.ok(hostRoom.events.some(event => event.text.includes('second-player move test')), 'host sees second player action');
+    assert.ok(hostRoom.state.moves.some(move => move.by === username2 && move.text === 'second-player move test'), 'second player move appears in shared room state');
+
+    r = await req('/api/multiplayer/rooms'); 
     assert.ok((await json(r)).rooms.some(item => item.id === room.id), 'list multiplayer rooms');
 
     r = await req('/api/certificate', { headers: { Cookie: cookie } });
