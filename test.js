@@ -20,6 +20,8 @@ async function main() {
   assert.match(adventure3d, /querySelectorAll\('button\\[data-mission\\]'\)\.forEach/);
   assert.match(adventure3d, /stateIndex=next;missionIndex=0;character\.position\.set\(0,0,5\);rebuildState\(\)/);
   assert.match(adventure3d, /missionIndex=next;rebuildState\(\)/);
+  assert.match(adventure3d, /querySelectorAll\('button\\[data-localgame\\]'\)\.forEach\(button=>button\.addEventListener\('click',\(\)=>startLocalGame\(button\.dataset\.localgame\)\)\)/, 'mini-game choices start the selected game');
+  assert.match(adventure3d, /function startLocalGame\(game\)/, 'mini-game implementations exist');
   assert.match(adventure3d, /data-game=\"ludo\"/);
   new vm.Script(fs.readFileSync('server.js', 'utf8'), { filename: 'server.js' });
   assert.match(html, /Oyo Community Development Office/);
