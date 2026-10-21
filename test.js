@@ -25,6 +25,8 @@ async function main() {
   assert.ok(adventure3d.includes('function startLocalGame(game)'), 'mini-game implementations exist');
   assert.ok(adventure3d.includes("That pit is empty. Choose a pit with seeds."), 'Ayo rejects empty-pit moves');
   assert.ok(adventure3d.includes('else if(i===selected){selected=null;'), 'Chess lets the player cancel a selected piece');
+  assert.ok(adventure3d.includes("host.querySelector('#fbAyo').textContent='That pit is empty. Choose a pit with seeds.'"), 'fallback Ayo rejects empty-pit moves');
+  assert.ok(adventure3d.includes("host.querySelector('#fbChess').textContent='Selection cancelled. Choose a piece.'"), 'fallback Chess allows selection cancellation');
   assert.ok(adventure3d.includes('data-game="ludo"'), 'fallback Ludo option exists');
   new vm.Script(fs.readFileSync('server.js', 'utf8'), { filename: 'server.js' });
   assert.match(html, /Oyo Community Development Office/);
