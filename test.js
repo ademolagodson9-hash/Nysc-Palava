@@ -23,6 +23,12 @@ async function main() {
   assert.ok(adventure3d.includes("querySelectorAll('button[data-localgame]')"), 'mini-game choices have click handlers');
   assert.ok(adventure3d.includes('startLocalGame(button.dataset.localgame)'), 'mini-game choices start selected game');
   assert.ok(adventure3d.includes('function startLocalGame(game)'), 'mini-game implementations exist');
+  assert.ok(adventure3d.includes('Choose the next shape:'), 'Whot wild card lets player choose a shape');
+  assert.ok(adventure3d.includes('Match shape or number; WHOT is wild.'), 'Whot supports matching and wild cards');
+  assert.ok(adventure3d.includes('Whot · You vs CPU'), 'Whot has a CPU opponent');
+  assert.ok(adventure3d.includes('reach 57 exactly to finish'), 'Ludo requires exact finish');
+  assert.ok(adventure3d.includes('let you=[-1,-1,-1,-1],cpu=[-1,-1,-1,-1]'), 'Ludo has four tokens per side');
+  assert.ok(adventure3d.includes('Ludo practice · You vs CPU'), 'Ludo has player-versus-CPU turns');
   assert.ok(adventure3d.includes("That pit is empty. Choose a pit with seeds."), 'Ayo rejects empty-pit moves');
   assert.ok(adventure3d.includes('else if(i===selected){selected=null;'), 'Chess lets the player cancel a selected piece');
   assert.ok(adventure3d.includes("host.querySelector('#fbAyo').textContent='That pit is empty. Choose a pit with seeds.'"), 'fallback Ayo rejects empty-pit moves');
