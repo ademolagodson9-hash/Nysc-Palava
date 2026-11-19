@@ -289,6 +289,7 @@ function title(){S=null;ONT=true;$('#hud').innerHTML='';
   {t:'Continue',s:ME?'Resume your cloud save':'Resume your saved game',f:load}];
  if(ME)CH.push({t:'Online hub',s:'Friends, chat, leaderboard',f:()=>window.hub&&hub()});
  else CH.push({t:'Sign in or create account',s:'Pick a username and play with friends',f:()=>window.authScreen?authScreen():toast('Online features are unavailable offline',1)});
+ CH.push({t:'🎮 Open all mini-games',s:'Ludo, Whot, Ayo Opon and Chess practice',f:()=>{window.location.href='/3d.html'}});
  CH.push({t:'📲 Install / download PALAVA',s:'Add the game to your phone or computer',f:()=>window.installPALAVA?window.installPALAVA():toast('Open this site in your browser menu and choose Install app / Add to Home Screen.')});
  CH.push({t:'Privacy policy',s:'How PALAVA handles game data',f:()=>window.open('/privacy-policy.html','_blank')},{t:'Terms of use',s:'Game rules and disclaimers',f:()=>window.open('/terms.html','_blank')},{t:'Delete account',s:'Permanently delete your account and game data',f:()=>window.open('/account-deletion.html','_blank')});
  CH.push({t:'Settings',f:settings},{t:'Extras',f:extras});
