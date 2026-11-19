@@ -37,7 +37,13 @@ async function main() {
   assert.ok(adventure3d.includes("host.querySelector('#fbAyo').textContent='That pit is empty. Choose a pit with seeds.'"), 'fallback Ayo rejects empty-pit moves');
   assert.ok(adventure3d.includes("host.querySelector('#fbChess').textContent='Selection cancelled. Choose a piece.'"), 'fallback Chess allows selection cancellation');
   assert.ok(adventure3d.includes('data-game="ludo"'), 'fallback Ludo option exists');
-  new vm.Script(fs.readFileSync('server.js', 'utf8'), { filename: 'server.js' });
+  const serverSource = fs.readFileSync('server.js', 'utf8');
+  new vm.Script(serverSource, { filename: 'server.js' });
+  assert.ok(serverSource.includes("process.env.DATABASE_URL ? new Pool"), 'PostgreSQL pool activates from DATABASE_URL');
+  assert.ok(serverSource.includes('CREATE TABLE IF NOT EXISTS palava_state'), 'persistent state table is initialized');
+  assert.ok(serverSource.includes('restoreState(result.rows[0].payload)'), 'persisted state is restored at startup');
+  assert.ok(serverSource.includes('ON CONFLICT (id) DO UPDATE'), 'state snapshots are upserted');
+  assert.ok(serverSource.includes("PALAVA PostgreSQL persistence ready."), 'database readiness is explicitly logged');
   assert.match(html, /Oyo Community Development Office/);
   assert.match(html, /Osun TechWorks/);
   assert.match(html, /installPALAVA/);
