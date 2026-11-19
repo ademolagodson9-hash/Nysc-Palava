@@ -37,12 +37,19 @@ npm start
 
 The smoke test checks JavaScript syntax, health, account registration, sign-in state, cloud save/load, community chat, certificate verification, the web-app manifest, install icons, sitemap and crawler rules.
 
+## Persistence configuration
+
+The server now supports PostgreSQL-backed state snapshots. Install dependencies with `npm install`, then set `DATABASE_URL` on the hosting service to the database's **internal** connection URL (keep it secret; never commit it). The app creates its `palava_state` table on startup, restores accounts, sessions, saves, chat, wallet ledger, certificates and multiplayer room state, and writes updated snapshots after mutations. If `DATABASE_URL` is absent, it intentionally runs in memory-only development mode and logs a warning. A database connection or schema failure prevents startup rather than silently pretending persistence is active.
+
+For Render, copy the Internal Database URL from the PostgreSQL database's Connect page into the web service's environment variables as `DATABASE_URL`. Do not paste credentials into source control or chat. After setting it, redeploy and verify the startup log says `PALAVA PostgreSQL persistence ready.`
+
 ## Important limitations
 
 - PALAVA certificates are game souvenirs, **not official NYSC documents**.
 - PPA names in the game are fictional examples, not official NYSC placement vacancies.
-- This is an early online prototype. Accounts, sessions, saves, chat and certificates are currently held in server memory and can be lost when the service restarts. Use a persistent database before relying on it for long-term player accounts.
-- The community hub is basic chat/player listing. Friends, direct messages, player-to-player transfers and the admin dashboard are not yet fully implemented and should not be treated as working features.
+- PostgreSQL persistence is implemented but is only active when `DATABASE_URL` is configured and the service can connect. Without it, accounts and game state remain in memory.
+- Multiplayer currently synchronizes room membership and action/event feeds through HTTP polling; the game boards are not yet authoritative, synchronized game engines. It is not ranked/competitive multiplayer.
+- Chess is a practice board and does not enforce full legal chess rules. Mini-games remain prototypes and need device-level gameplay validation before release.
 
 ## Deployment
 
