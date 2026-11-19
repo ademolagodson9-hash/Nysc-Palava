@@ -30,7 +30,9 @@ async function main() {
   assert.ok(adventure3d.includes('let you=[-1,-1,-1,-1],cpu=[-1,-1,-1,-1]'), 'Ludo has four tokens per side');
   assert.ok(adventure3d.includes('Ludo practice · You vs CPU'), 'Ludo has player-versus-CPU turns');
   assert.ok(adventure3d.includes("if(turn==='cpu'&&!finished){turn='you';status='CPU bonus-roll limit reached. Your turn.';}"), 'Ludo CPU bonus-roll cap always returns control to the player');
-  assert.ok(adventure3d.includes("That pit is empty. Choose a pit with seeds."), 'Ayo rejects empty-pit moves');
+  assert.ok(adventure3d.includes('Ayo Opon · You vs CPU'), 'Ayo has a playable CPU match');
+  assert.ok(adventure3d.includes('scores[side]+=pits[at]'), 'Ayo captures seeds and tracks match scores');
+  assert.ok(adventure3d.includes('function finishIfNeeded()'), 'Ayo detects completed matches and declares results');
   assert.ok(adventure3d.includes('else if(i===selected){selected=null;'), 'Chess lets the player cancel a selected piece');
   assert.ok(adventure3d.includes("host.querySelector('#fbAyo').textContent='That pit is empty. Choose a pit with seeds.'"), 'fallback Ayo rejects empty-pit moves');
   assert.ok(adventure3d.includes("host.querySelector('#fbChess').textContent='Selection cancelled. Choose a piece.'"), 'fallback Chess allows selection cancellation');
